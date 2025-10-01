@@ -1,127 +1,166 @@
-# Sailor Skills Shared
+# @sailorskills/shared
 
-Common utilities, authentication, and components shared across all Sailor Skills products.
-
-## Overview
-
-The Shared package contains all the code that multiple products need: authentication logic, UI components, database utilities, and configuration. This prevents code duplication and ensures consistency across the suite.
-
-## What's Included
-
-### Authentication
-- Supabase client initialization
-- Login/logout flows
-- Session management
-- Token handling
-- Role-based access control
-- Password reset
-
-### UI Components
-- Buttons (primary, secondary, danger)
-- Form inputs (text, email, tel, etc.)
-- Modals and dialogs
-- Navigation headers
-- Loading states
-- Toast notifications
-- Error boundaries
-
-### Database Utilities
-- Supabase query helpers
-- Common table operations (CRUD)
-- Transaction wrappers
-- Error handling
-- Connection pooling
-
-### API Clients
-- Stripe integration helpers
-- Google Calendar utilities
-- Email service wrappers
-- HTTP request helpers
-
-### Configuration
-- Environment variable loading
-- Feature flags
-- API endpoint configuration
-- Theme/styling constants
-
-### Validation
-- Form validation rules
-- Data sanitization
-- Input formatters (phone, currency, etc.)
-- Error messages
-
-## Tech Stack
-
-- **Language**: JavaScript (ES6+)
-- **Package Manager**: npm
-- **Distribution**: Private npm package or git submodule
-- **Testing**: Jest
-
-## Project Structure
-
-```
-shared/
-├── src/
-│   ├── auth/
-│   │   ├── supabase.js
-│   │   ├── login.js
-│   │   └── session.js
-│   ├── components/
-│   │   ├── Button.js
-│   │   ├── Modal.js
-│   │   └── Form.js
-│   ├── api/
-│   │   ├── stripe.js
-│   │   ├── calendar.js
-│   │   └── email.js
-│   ├── utils/
-│   │   ├── validators.js
-│   │   ├── formatters.js
-│   │   └── helpers.js
-│   └── config/
-│       ├── constants.js
-│       └── env.js
-├── tests/
-└── package.json
-```
+Shared utilities and components for all Sailor Skills products.
 
 ## Installation
 
-### Option A: NPM Package (Recommended)
+### Option 1: npm Package (Recommended)
 ```bash
-# In any product repo
-npm install @sailorskills/shared@latest
+npm install @sailorskills/shared
 ```
 
-### Option B: Git Submodule
+### Option 2: Git Submodule
 ```bash
-# In any product repo
-git submodule add https://github.com/standardhuman/sailorskills-shared shared
+git submodule add https://github.com/standardhuman/sailorskills-shared.git shared
 ```
 
-## Usage Example
+## Features
 
+### 🔐 Authentication
+Simple password-based auth with session management:
 ```javascript
-// Authentication
-import { initSupabase, login, logout } from '@sailorskills/shared/auth';
+import { SimpleAuth, createAuthModal } from '@sailorskills/shared';
 
-const supabase = initSupabase();
-await login(email, password);
+const auth = new SimpleAuth({ sessionKey: 'my_app_session' });
 
-// Components
-import { Button, Modal } from '@sailorskills/shared/components';
-
-<Button variant="primary" onClick={handleClick}>
-  Save
-</Button>
-
-// Validation
-import { validateEmail, formatPhone } from '@sailorskills/shared/utils';
-
-if (!validateEmail(email)) {
-  showError('Invalid email');
+// Check if authenticated
+if (auth.isLoggedIn()) {
+  // User is logged in
 }
+
+// Show login modal
+const { password, modal } = await createAuthModal({
+  title: '🔒 Login Required',
+  subtitle: 'Enter password to continue'
+});
 ```
+
+### 🗄️ Supabase Integration
+```javascript
+import { createSupabaseClient, supabase } from '@sailorskills/shared';
+
+// Initialize (auto-configured from env vars)
+const client = createSupabaseClient();
+
+// Or use singleton
+const { data, error } = await supabase
+  .from('table')
+  .select('*');
+```
+
+### 💳 Stripe Integration
+```javascript
+import {
+  initStripe,
+  createCardElement,
+  createPaymentIntent,
+  confirmCardPayment
+} from '@sailorskills/shared';
+
+// Initialize Stripe
+initStripe('pk_test_...');
+
+// Create card element
+const cardElement = createCardElement('#card-element');
+
+// Process payment
+const intent = await createPaymentIntent('/api/payment', { amount: 5000 });
+const result = await confirmCardPayment(intent.clientSecret, cardElement);
+```
+
+### 🎨 UI Components
+```javascript
+import {
+  createButton,
+  createModal,
+  createSpinner,
+  showToast,
+  createFormInput
+} from '@sailorskills/shared';
+
+// Button
+const btn = createButton({
+  text: 'Click Me',
+  variant: 'primary',
+  onClick: () => alert('Clicked!')
+});
+
+// Modal
+const modal = createModal({
+  title: 'Hello',
+  content: 'Modal content here',
+  size: 'medium'
+});
+modal.open();
+
+// Toast notification
+showToast('Success!', 'success', 3000);
+
+// Form input
+const input = createFormInput({
+  type: 'email',
+  label: 'Email Address',
+  required: true
+});
+```
+
+## Styling
+
+Import CSS in your HTML:
+```html
+<link rel="stylesheet" href="node_modules/@sailorskills/shared/src/ui/styles.css">
+<link rel="stylesheet" href="node_modules/@sailorskills/shared/src/auth/styles.css">
+```
+
+Or import in your JS/CSS:
+```javascript
+import '@sailorskills/shared/src/ui/styles.css';
+import '@sailorskills/shared/src/auth/styles.css';
+```
+
+## Environment Variables
+
+Required for Supabase:
+```env
+VITE_SUPABASE_URL=https://your-project.supabase.co
+VITE_SUPABASE_ANON_KEY=your-anon-key
+```
+
+Required for Stripe:
+```env
+VITE_STRIPE_PUBLISHABLE_KEY=pk_test_...
+```
+
+## API Reference
+
+### Authentication
+- `SimpleAuth` - Auth class with session management
+- `createAuthModal(options)` - Create login modal
+- `showAuthError(errorDiv, passwordInput)` - Show auth error
+- `closeAuthModal(modal)` - Close auth modal
+
+### Supabase
+- `initSupabase(url, key)` - Initialize client
+- `getSupabase()` - Get client instance
+- `createSupabaseClient()` - Auto-init from env
+- `supabase` - Singleton instance
+
+### Stripe
+- `initStripe(publishableKey)` - Initialize Stripe
+- `getStripe()` - Get Stripe instance
+- `createCardElement(selector, style)` - Create card input
+- `createPaymentIntent(url, data)` - Create payment
+- `confirmCardPayment(secret, card, billing)` - Confirm payment
+- `formatAmountForStripe(amount)` - Convert to cents
+- `formatAmountFromStripe(amount)` - Convert to dollars
+
+### UI Components
+- `createButton(options)` - Create button
+- `createModal(options)` - Create modal
+- `createSpinner(options)` - Create loading spinner
+- `createToast(options)` - Create toast notification
+- `createFormInput(options)` - Create form input
+- `showToast(message, type, duration)` - Quick toast
 
 ## Development
 
