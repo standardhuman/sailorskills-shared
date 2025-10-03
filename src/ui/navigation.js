@@ -14,7 +14,8 @@ export function createGlobalNav(options = {}) {
     const { currentPage, onLogout } = options;
 
     const navItems = [
-        { id: 'admin', label: 'Admin', url: 'https://sailorskills-billing.vercel.app/admin.html' },
+        { id: 'admin', label: 'Admin', url: 'https://sailorskills-admin.vercel.app' },
+        { id: 'portal', label: 'Portal', url: 'https://sailorskills-portal.vercel.app' },
         { id: 'billing', label: 'Billing', url: 'https://sailorskills-billing.vercel.app' },
         { id: 'inventory', label: 'Inventory', url: 'https://sailorskills-inventory.vercel.app' },
         { id: 'schedule', label: 'Schedule', url: 'https://sailorskills-schedule.vercel.app' },
