@@ -42,5 +42,13 @@ export {
   showToast
 } from './ui/components.js';
 
+// Navigation
+export {
+  createGlobalNav,
+  createBreadcrumb,
+  injectNavigation,
+  initNavigation
+} from './ui/navigation.js';
+
 // Version
 export const version = '0.1.0';
