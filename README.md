@@ -1,6 +1,11 @@
 # @sailorskills/shared
 
-Shared utilities and components for all Sailor Skills products.
+Shared utilities, components, and design system for all Sailor Skills products.
+
+> **Design Philosophy**: Clean, minimal, professional aesthetic inspired by the estimator service.
+> **Brand Colors**: Blue-gray palette (#345475)
+> **Typography**: Montserrat
+> **Style**: Sharp corners, flat design, high contrast
 
 ## Installation
 
@@ -104,19 +109,76 @@ const input = createFormInput({
 });
 ```
 
-## Styling
+## Design System
 
-Import CSS in your HTML:
+### Styling
+
+Import the design system CSS in your HTML:
 ```html
+<!-- Design tokens (CSS variables) -->
+<link rel="stylesheet" href="node_modules/@sailorskills/shared/src/ui/design-tokens.css">
+<!-- Component styles -->
 <link rel="stylesheet" href="node_modules/@sailorskills/shared/src/ui/styles.css">
+<!-- Auth styles (if needed) -->
 <link rel="stylesheet" href="node_modules/@sailorskills/shared/src/auth/styles.css">
 ```
 
 Or import in your JS/CSS:
 ```javascript
+import '@sailorskills/shared/src/ui/design-tokens.css';
 import '@sailorskills/shared/src/ui/styles.css';
 import '@sailorskills/shared/src/auth/styles.css';
 ```
+
+### Design Tokens
+
+The shared package provides CSS variables for consistent styling:
+
+```css
+/* Colors */
+--ss-primary: #345475;           /* Brand blue-gray */
+--ss-text-dark: #181818;         /* Primary text */
+--ss-text-medium: #6d7b89;       /* Secondary text */
+
+/* Typography */
+--ss-font-primary: 'Montserrat', Arial, sans-serif;
+--ss-text-base: 1rem;            /* 16px */
+--ss-text-lg: 1.25rem;           /* 20px */
+--ss-weight-normal: 400;
+
+/* Spacing */
+--ss-space-sm: 0.5rem;           /* 8px */
+--ss-space-md: 1rem;             /* 16px */
+--ss-space-lg: 1.5rem;           /* 24px */
+
+/* Borders */
+--ss-radius-none: 0px;           /* Sharp corners everywhere */
+--ss-border: #d0d0d0;
+```
+
+**See `src/ui/design-tokens.css` for the complete list.**
+
+### Brand Guidelines
+
+#### Colors
+- **Primary**: `#345475` (dark blue-gray) - Used for headers, primary actions
+- **Text Dark**: `#181818` - Body text
+- **Text Medium**: `#6d7b89` - Secondary text, subtitles
+- **Accent Blue**: `#116DFF` - Highlights, borders
+- **Background**: `#ffffff` (white) with `#fafafa` for subtle variation
+
+#### Typography
+- **Font**: Montserrat (primary), Arial (fallback)
+- **Weights**: 400 (normal), 500 (medium), 600 (semibold), 700 (bold)
+- **Hero Size**: 100px (desktop), 64px (mobile)
+- **Headings**: 20-40px range
+- **Body**: 14-16px
+
+#### Design Principles
+- **Sharp Corners**: Use `border-radius: 0px` for buttons, inputs, cards
+- **Flat Design**: Minimal shadows, avoid gradients
+- **High Contrast**: Dark text on white backgrounds
+- **Minimal**: Clean, spacious layouts with generous whitespace
 
 ## Environment Variables
 
@@ -131,7 +193,58 @@ Required for Stripe:
 VITE_STRIPE_PUBLISHABLE_KEY=pk_test_...
 ```
 
+## Configuration & Constants
+
+The shared package provides common constants and utilities:
+
+```javascript
+import {
+  SERVICES,      // Service URLs
+  BUSINESS,      // Business constants (minimum fee, etc.)
+  STORAGE_KEYS,  // localStorage/sessionStorage keys
+  ENV,           // Environment helpers
+  VALIDATORS,    // Validation functions
+  FORMATTERS     // Formatting helpers
+} from '@sailorskills/shared';
+
+// Example usage
+const minFee = BUSINESS.MINIMUM_SERVICE_FEE; // $150
+const isValid = VALIDATORS.isValidEmail('user@example.com');
+const formatted = FORMATTERS.currency(1234.56); // "$1,234.56"
+```
+
+### Environment Variables
+
+Use the `ENV` helper to access environment variables consistently:
+
+```javascript
+import { ENV } from '@sailorskills/shared';
+
+const supabaseUrl = ENV.getSupabaseUrl();
+const isProduction = ENV.isProduction();
+```
+
+Required environment variables:
+- `VITE_SUPABASE_URL` - Supabase project URL
+- `VITE_SUPABASE_ANON_KEY` - Supabase anonymous key
+- `VITE_STRIPE_PUBLISHABLE_KEY` - Stripe publishable key
+
 ## API Reference
+
+### Configuration & Constants
+- `SERVICES` - Service URLs for all microservices
+- `BUSINESS` - Business constants (minimum fee, currency, etc.)
+- `STORAGE_KEYS` - Standardized storage keys
+- `SERVICE_TYPES` - Service type constants
+- `BOAT_TYPES` - Boat type constants
+- `PAYMENT_STATUS` - Payment status constants
+- `ENV.getSupabaseUrl()` - Get Supabase URL from env
+- `ENV.getStripeKey()` - Get Stripe key from env
+- `ENV.isProduction()` - Check if production
+- `VALIDATORS.isValidEmail(email)` - Validate email
+- `FORMATTERS.currency(amount)` - Format currency
+- `FORMATTERS.phone(phone)` - Format phone number
+- `FORMATTERS.date(date, format)` - Format date
 
 ### Authentication
 - `SimpleAuth` - Auth class with session management
@@ -159,8 +272,16 @@ VITE_STRIPE_PUBLISHABLE_KEY=pk_test_...
 - `createModal(options)` - Create modal
 - `createSpinner(options)` - Create loading spinner
 - `createToast(options)` - Create toast notification
-- `createFormInput(options)` - Create form input
+- `createFormInput(options)` - Create form text input
+- `createFormSelect(options)` - Create form select/dropdown
+- `createHeroHeader(options)` - Create hero header section
 - `showToast(message, type, duration)` - Quick toast
+
+### Navigation
+- `createGlobalNav(options)` - Create navigation header HTML
+- `createBreadcrumb(breadcrumbs)` - Create breadcrumb trail
+- `injectNavigation(options)` - Inject nav into DOM
+- `initNavigation(options)` - Initialize navigation for a page
 
 ## Development
 
@@ -198,30 +319,85 @@ Uses Semantic Versioning (SemVer):
 - Automatic updates
 - Better for production
 
-## What Goes in Shared vs Product Repos
+## Best Practices
 
-**✅ Shared:**
-- Used by 2+ products
-- No product-specific logic
-- Generic, reusable code
-- Configuration templates
+### What Goes in Shared vs Product Repos
 
-**❌ Product Repos:**
+**✅ Shared Package Should Contain:**
+- UI components used by 2+ services
+- Design system (colors, typography, spacing)
+- Shared utilities (validation, formatting)
+- Common constants (business rules, service URLs)
+- Environment variable helpers
+- Navigation components
+- Authentication utilities
+- API client wrappers (Supabase, Stripe)
+
+**❌ Product Repos Should Contain:**
 - Product-specific business logic
-- Unique UI flows
+- Unique UI flows and features
 - Product-specific data models
-- Feature implementations
+- Custom calculations (e.g., diving price calculator)
+- Service-specific API endpoints
+- Product-specific state management
 
-## Examples of Shared Code
+### Examples
 
 ```javascript
-// ✅ Good - Generic button component
-export function Button({ variant, onClick, children }) { ... }
+// ✅ Good - Belongs in shared
+export function createButton({ variant, onClick, text }) { ... }
+export const BUSINESS = { MINIMUM_SERVICE_FEE: 150 };
+export function formatCurrency(amount) { ... }
 
-// ❌ Bad - Product-specific logic
-export function CalculateDivingPrice(depth, time) { ... }
-// ^ This belongs in estimator repo
+// ❌ Bad - Belongs in product repos
+export function calculateDivingPrice(depth, time, hull) { ... }
+export function DivingEstimateForm() { ... }
+export const DIVING_SERVICES = ['hull-cleaning', 'zincs', ...];
 ```
+
+### Environment Variables
+
+Store common environment variable keys and helpers in shared:
+- ✅ `ENV.getSupabaseUrl()` - Generic helper
+- ✅ `STORAGE_KEYS.AUTH_SESSION` - Standardized key names
+- ❌ Service-specific API endpoints - Keep in product repos
+
+### Styling Best Practices
+
+**Use the design system for consistency:**
+
+```css
+/* ✅ Good - Use CSS variables */
+.my-component {
+  color: var(--ss-primary);
+  font-family: var(--ss-font-primary);
+  padding: var(--ss-space-md);
+  border-radius: var(--ss-radius-none);
+}
+
+/* ❌ Bad - Hardcoded values */
+.my-component {
+  color: #345475;
+  font-family: 'Montserrat';
+  padding: 16px;
+  border-radius: 8px; /* Should be 0px for Sailor Skills */
+}
+```
+
+**Component classes:**
+- Use `ss-` prefix for shared components
+- Use shared components via JavaScript exports when possible
+- Add service-specific styles in product repos
+
+### Version Control
+
+When adding to shared:
+1. Ensure it's needed by 2+ products (or will be soon)
+2. Keep it generic and configurable
+3. Add tests if applicable
+4. Update version number (semver)
+5. Update README with examples
+6. Test in at least one service before pushing
 
 ## License
 

@@ -39,6 +39,8 @@ export {
   createSpinner,
   createToast,
   createFormInput,
+  createFormSelect,
+  createHeroHeader,
   showToast
 } from './ui/components.js';
 
@@ -49,6 +51,22 @@ export {
   injectNavigation,
   initNavigation
 } from './ui/navigation.js';
+
+// Configuration & Constants
+export {
+  SERVICES,
+  BUSINESS,
+  STORAGE_KEYS,
+  SERVICE_TYPES,
+  BOAT_TYPES,
+  PAYMENT_STATUS,
+  API_ENDPOINTS,
+  PATTERNS,
+  DATE_FORMATS,
+  ENV,
+  VALIDATORS,
+  FORMATTERS
+} from './config/constants.js';
 
 // Version
 export const version = '0.1.0';

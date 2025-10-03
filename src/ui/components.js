@@ -294,3 +294,124 @@ export function showToast(message, type = 'info', duration = 3000) {
   const toast = createToast({ message, type, duration });
   toast.show();
 }
+
+/**
+ * Create a hero header component
+ * Standardized hero section used across all Sailor Skills services
+ * @param {Object} options - Hero configuration
+ * @returns {HTMLElement} Hero header element
+ */
+export function createHeroHeader(options = {}) {
+  const {
+    brand = 'SAILOR SKILLS',
+    service = 'SERVICE',
+    tagline = '',
+    subtitle = '',
+    className = ''
+  } = options;
+
+  const heroHeader = document.createElement('div');
+  heroHeader.className = `hero-header ${className}`.trim();
+
+  const heroContent = document.createElement('div');
+  heroContent.className = 'hero-content';
+
+  const brandEl = document.createElement('div');
+  brandEl.className = 'hero-brand';
+  brandEl.textContent = brand;
+  heroContent.appendChild(brandEl);
+
+  const serviceEl = document.createElement('h1');
+  serviceEl.className = 'hero-service';
+  serviceEl.textContent = service;
+  heroContent.appendChild(serviceEl);
+
+  if (tagline) {
+    const taglineEl = document.createElement('div');
+    taglineEl.className = 'hero-tagline';
+    taglineEl.textContent = tagline;
+    heroContent.appendChild(taglineEl);
+  }
+
+  if (subtitle) {
+    const subtitleEl = document.createElement('div');
+    subtitleEl.className = 'hero-subtitle';
+    subtitleEl.textContent = subtitle;
+    heroContent.appendChild(subtitleEl);
+  }
+
+  heroHeader.appendChild(heroContent);
+
+  return heroHeader;
+}
+
+/**
+ * Create a select/dropdown form input
+ * @param {Object} options - Select configuration
+ * @returns {HTMLElement} Select group element
+ */
+export function createFormSelect(options = {}) {
+  const {
+    id = '',
+    name = '',
+    label = '',
+    required = false,
+    value = '',
+    options: selectOptions = [],
+    error = '',
+    helpText = '',
+    className = ''
+  } = options;
+
+  const group = document.createElement('div');
+  group.className = `ss-form-group ${className}`.trim();
+
+  if (label) {
+    const labelEl = document.createElement('label');
+    labelEl.className = 'ss-form-label';
+    labelEl.textContent = label;
+    if (required) {
+      const req = document.createElement('span');
+      req.className = 'ss-form-required';
+      req.textContent = '*';
+      labelEl.appendChild(req);
+    }
+    if (id) labelEl.setAttribute('for', id);
+    group.appendChild(labelEl);
+  }
+
+  const select = document.createElement('select');
+  select.className = 'ss-form-input';
+  if (id) select.id = id;
+  if (name) select.name = name;
+  if (required) select.required = true;
+
+  selectOptions.forEach(opt => {
+    const option = document.createElement('option');
+    option.value = opt.value || opt;
+    option.textContent = opt.label || opt;
+    if (opt.value === value || opt === value) {
+      option.selected = true;
+    }
+    select.appendChild(option);
+  });
+
+  group.appendChild(select);
+
+  if (helpText) {
+    const help = document.createElement('small');
+    help.className = 'ss-form-help';
+    help.textContent = helpText;
+    group.appendChild(help);
+  }
+
+  if (error) {
+    const errorEl = document.createElement('div');
+    errorEl.className = 'ss-form-error';
+    errorEl.textContent = error;
+    group.appendChild(errorEl);
+    select.classList.add('ss-form-input-error');
+  }
+
+  return group;
+}
