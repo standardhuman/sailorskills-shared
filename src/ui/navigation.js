@@ -32,7 +32,6 @@ export function createGlobalNav(options = {}) {
     <!-- Global Navigation Header -->
     <header class="global-header">
         <div class="global-nav-container">
-            <a href="https://www.sailorskills.com/" class="nav-logo">SAILOR SKILLS</a>
             <nav class="global-nav">
                 ${navHTML}
             </nav>
