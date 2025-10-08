@@ -14,12 +14,11 @@ export function createGlobalNav(options = {}) {
     const { currentPage, onLogout } = options;
 
     const navItems = [
-        { id: 'admin', label: 'Admin', url: 'https://sailorskills-admin.vercel.app' },
-        { id: 'portal', label: 'Portal', url: 'https://sailorskills-portal.vercel.app' },
-        { id: 'billing', label: 'Billing', url: 'https://sailorskills-billing.vercel.app' },
-        { id: 'inventory', label: 'Inventory', url: 'https://sailorskills-inventory.vercel.app' },
-        { id: 'schedule', label: 'Schedule', url: 'https://sailorskills-schedule.vercel.app' },
-        { id: 'estimator', label: 'Estimator', url: 'https://sailorskills-estimator.vercel.app' }
+        { id: 'home', label: 'HOME', url: 'https://www.sailorskills.com/' },
+        { id: 'training', label: 'TRAINING', url: 'https://www.sailorskills.com/training' },
+        { id: 'diving', label: 'DIVING', url: 'https://www.sailorskills.com/diving' },
+        { id: 'detailing', label: 'DETAILING', url: 'https://www.sailorskills.com/detailing' },
+        { id: 'deliveries', label: 'DELIVERIES', url: 'https://www.sailorskills.com/deliveries' }
     ];
 
     const navHTML = navItems.map(item => {
