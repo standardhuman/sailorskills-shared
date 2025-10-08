@@ -1,7 +1,7 @@
 import { test, expect } from '@playwright/test';
 
 const services = [
-  { name: 'Portal', url: 'http://localhost:5174', page: 'portal' },
+  { name: 'Portal', url: 'http://localhost:5173', page: 'portal' },
   { name: 'Admin', url: 'http://localhost:8001/dashboard.html', page: 'admin' },
   { name: 'Inventory', url: 'http://localhost:5176/inventory.html', page: 'inventory', requiresAuth: true },
   { name: 'Schedule', url: 'http://localhost:3000/schedule.html', page: 'schedule' },
