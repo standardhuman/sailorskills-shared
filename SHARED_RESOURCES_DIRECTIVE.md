@@ -214,13 +214,13 @@ border-radius: 0.5rem;
 <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700&display=swap" rel="stylesheet">
 ```
 
-#### 4. Global Navigation (REQUIRED)
+#### 4. Global Navigation (REQUIRED for internal services)
 ```html
 <script type="module">
   import { initNavigation } from '/shared/src/ui/navigation.js';
 
   initNavigation({
-    currentPage: 'your-service-id',  // Required: 'admin', 'portal', 'billing', 'inventory', 'schedule', 'estimator'
+    currentPage: 'your-service-id',  // Required: 'admin', 'portal', 'billing', 'inventory', 'schedule'
     breadcrumbs: [                    // Optional but recommended
       { label: 'Home', url: 'https://www.sailorskills.com/' },
       { label: 'Admin', url: 'https://sailorskills-admin.vercel.app' },
@@ -230,9 +230,11 @@ border-radius: 0.5rem;
 </script>
 ```
 
+**Exception:** Public-facing services (like Estimator) do NOT require global navigation integration.
+
 ### Navigation Integration Checklist
 
-Before deploying any service, ensure:
+Before deploying any **internal** service, ensure:
 
 - [ ] Montserrat font loaded in `<head>`
 - [ ] `/shared/src/ui/design-tokens.css` imported
@@ -244,20 +246,22 @@ Before deploying any service, ensure:
 - [ ] Active page state correctly highlighted
 - [ ] Navigation displays on all pages in the service
 
+**Note:** Public-facing services (Estimator) skip navigation-related items.
+
 ### Service URLs & IDs
 
 **Official Service Registry:**
 
-| Service ID | Name | Production URL | Local Dev |
-|------------|------|----------------|-----------|
-| `admin` | Admin Dashboard | https://sailorskills-admin.vercel.app | localhost:8001 |
-| `portal` | Service Portal | https://sailorskills-portal.vercel.app | localhost:5174 |
-| `billing` | Billing | https://sailorskills-billing.vercel.app | localhost:5173 |
-| `inventory` | Inventory | https://sailorskills-inventory.vercel.app | localhost:5176 |
-| `schedule` | Schedule | https://sailorskills-schedule.vercel.app | localhost:3000 |
-| `estimator` | Diving Estimator | https://sailorskills-estimator.vercel.app | localhost:5175 |
+| Service ID | Name | Production URL | Local Dev | Type |
+|------------|------|----------------|-----------|------|
+| `admin` | Admin Dashboard | https://sailorskills-admin.vercel.app | localhost:8001 | Internal |
+| `portal` | Service Portal | https://sailorskills-portal.vercel.app | localhost:5174 | Internal |
+| `billing` | Billing | https://sailorskills-billing.vercel.app | localhost:5173 | Internal |
+| `inventory` | Inventory | https://sailorskills-inventory.vercel.app | localhost:5176 | Internal |
+| `schedule` | Schedule | https://sailorskills-schedule.vercel.app | localhost:3000 | Internal |
+| `estimator` | Diving Estimator | https://sailorskills-estimator.vercel.app | localhost:5175 | **Public** |
 
-**Use these exact IDs** when calling `initNavigation({ currentPage: 'id' })`.
+**Use these exact IDs** when calling `initNavigation({ currentPage: 'id' })` (internal services only).
 
 ---
 
@@ -504,9 +508,9 @@ npx playwright test tests/navigation-compliance.spec.js
 - ✅ Schedule: 5/7 passing (71%)
 - ⚠️ Portal: Not yet tested
 - ⚠️ Billing: Not yet tested
-- ⚠️ Estimator: Not yet tested
+- N/A Estimator: Exempt (public-facing)
 
-**Requirement:** All services must achieve **100% pass rate** before production deployment.
+**Requirement:** All **internal** services must achieve **100% pass rate** before production deployment.
 
 ### Design Token Usage Validation
 
@@ -646,13 +650,24 @@ localStorage.setItem('inventory_auth_session', JSON.stringify({
 **Technology:** Vite
 **Port:** 5175 (dev)
 **Deployment:** Vercel
+**Type:** Public-facing
 
 **Requirements:**
-- Uses `/shared/` absolute paths
+- Uses `/shared/` absolute paths for design tokens and styles
+- **NO navigation integration required** (public-facing)
+- **NO breadcrumbs required** (public-facing)
 - Diving service calculator
 - Hero header style
 
-**Status:** ⚠️ Needs navigation integration
+**Integration:**
+```html
+<!-- Only include design system, NOT navigation -->
+<link rel="stylesheet" href="/shared/src/ui/design-tokens.css">
+<link rel="stylesheet" href="/shared/src/ui/styles.css">
+<!-- DO NOT include navigation.js -->
+```
+
+**Status:** ✅ Exempt from navigation requirements (public-facing)
 
 ---
 
