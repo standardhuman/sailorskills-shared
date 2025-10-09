@@ -697,13 +697,13 @@ function applyFiltersAndRender() {
     const endDate = new Date(f.dateEnd);
     filtered = filtered.filter(row => new Date(row.created_at) <= endDate);
   }
-  if (f.ltvMin !== null) {
+  if (f.ltvMin != null) { // Use != to check for both null AND undefined
     filtered = filtered.filter(row => row.ltv >= f.ltvMin);
   }
-  if (f.ltvMax !== null) {
+  if (f.ltvMax != null) { // Use != to check for both null AND undefined
     filtered = filtered.filter(row => row.ltv <= f.ltvMax);
   }
-  if (f.ordersMin !== null) {
+  if (f.ordersMin != null) { // Use != to check for both null AND undefined
     filtered = filtered.filter(row => row.orderCount >= f.ordersMin);
   }
   if (f.hasBoats === 'yes') {
