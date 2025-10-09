@@ -1,0 +1,949 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Billing - Charge Customer | Sailor Skills</title>
+    <!-- Build: 2025-10-06 -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Shared Styles (includes navigation and design tokens) -->
+  <script type="module" crossorigin src="/assets/admin-D7VnO9eL.js"></script>
+  <link rel="modulepreload" crossorigin href="/assets/modulepreload-polyfill-B5Qt9EMX.js">
+  <link rel="stylesheet" crossorigin href="/assets/admin-CfdBxhCo.css">
+</head>
+<body>
+    <!-- Global Navigation (will be injected by shared/ui/navigation.js) -->
+
+    <!-- Main Content -->
+    <main class="main-content">
+        <!-- Add Payment Method Modal -->
+        <div id="paymentMethodModal" class="modal" style="display: none;">
+            <div class="modal-content">
+                <span class="close" onclick="closePaymentMethodForm()">&times;</span>
+                <h2>Add Payment Method</h2>
+                <div id="paymentCustomerInfo" style="margin-bottom: 20px; padding: 15px; background: #f8f9fa; border-radius: 8px;">
+                    <!-- Customer info will be populated here -->
+                </div>
+                <form id="payment-form" autocomplete="off" data-private="true">
+                    <div id="card-element" style="padding: 12px; border: 1px solid #ddd; border-radius: 6px; background: white;">
+                        <!-- Stripe card element will be mounted here -->
+                    </div>
+                    <div id="card-errors" role="alert" style="color: #e74c3c; margin-top: 10px; min-height: 20px;"></div>
+                    <div class="form-actions" style="margin-top: 20px;">
+                        <button type="button" onclick="closePaymentMethodForm()" class="cancel-btn">Cancel</button>
+                        <button type="submit" id="submit-payment" class="submit-btn">Add Card</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- New Customer Modal -->
+        <div id="newCustomerModal" class="modal" style="display: none;">
+            <div class="modal-content">
+                <span class="close" onclick="window.adminApp.closeCreateCustomerForm()">&times;</span>
+                <h2>Create New Customer</h2>
+                <form id="newCustomerForm">
+                    <div class="form-group">
+                        <label for="newCustomerName">Full Name *</label>
+                        <input type="text" id="newCustomerName" name="name" required placeholder="John Doe">
+                    </div>
+                    <div class="form-group">
+                        <label for="newCustomerEmail">Email *</label>
+                        <input type="email" id="newCustomerEmail" name="email" required placeholder="customer@example.com">
+                    </div>
+                    <div class="form-group">
+                        <label for="newCustomerPhone">Phone</label>
+                        <input type="tel" id="newCustomerPhone" name="phone" placeholder="+1 (555) 123-4567">
+                    </div>
+                    <div class="form-group">
+                        <label for="newCustomerBoatName">Boat Name</label>
+                        <input type="text" id="newCustomerBoatName" name="boat_name" placeholder="Serenity">
+                    </div>
+                    <div class="form-group">
+                        <label for="newCustomerBoatLength">Boat Length (feet)</label>
+                        <input type="number" id="newCustomerBoatLength" name="boat_length" min="20" max="100" placeholder="35">
+                    </div>
+                    <div class="form-group">
+                        <label for="newCustomerBoatMake">Boat Make/Manufacturer</label>
+                        <input type="text" id="newCustomerBoatMake" name="boat_make" placeholder="Catalina, Beneteau, etc.">
+                    </div>
+                    <div class="form-group">
+                        <label for="newCustomerBoatModel">Boat Model</label>
+                        <input type="text" id="newCustomerBoatModel" name="boat_model" placeholder="Oceanis 45, Hunter 36, etc.">
+                    </div>
+                    <div class="form-group">
+                        <label for="newCustomerBoatYear">Boat Year</label>
+                        <input type="number" id="newCustomerBoatYear" name="boat_year" min="1900" max="2025" placeholder="2018">
+                    </div>
+                    <div class="form-group">
+                        <label for="newCustomerMarina">Marina</label>
+                        <input type="text" id="newCustomerMarina" name="marina" placeholder="San Francisco Marina">
+                    </div>
+                    <div class="form-group">
+                        <label for="newCustomerDock">Dock</label>
+                        <input type="text" id="newCustomerDock" name="dock" placeholder="A, B, C, etc.">
+                    </div>
+                    <div class="form-group">
+                        <label for="newCustomerSlip">Slip Number</label>
+                        <input type="text" id="newCustomerSlip" name="slip" placeholder="123">
+                    </div>
+                    <div class="form-group">
+                        <label for="newCustomerNotes">Notes</label>
+                        <textarea id="newCustomerNotes" name="description" rows="3" placeholder="Any additional notes about the customer or boat..."></textarea>
+                    </div>
+                    <div class="form-actions">
+                        <button type="button" onclick="window.adminApp.closeCreateCustomerForm()" class="cancel-btn">Cancel</button>
+                        <button type="submit" class="submit-btn">Create Customer</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- Service Selection Modal -->
+        <div id="serviceSelectionModal" class="modal" style="display: none;">
+            <div class="modal-content" style="max-width: 500px;">
+                <span class="close" onclick="window.closeServiceSelectionModal()">&times;</span>
+                <h2 style="margin-bottom: 20px;">Select Service to Bill</h2>
+
+                <div id="customerServiceInfo" style="margin-bottom: 20px; padding: 15px; background: #f8f9fa; border-radius: 8px;">
+                    <!-- Customer info will be shown here -->
+                </div>
+
+                <div id="existingServicesList" style="margin-bottom: 20px;">
+                    <!-- List of customer's existing services will be shown here -->
+                </div>
+
+                <div style="border-top: 1px solid #ddd; padding-top: 15px; margin-top: 15px;">
+                    <button onclick="window.chooseManualService()" class="secondary-btn" style="width: 100%; padding: 12px; background: #6c757d; color: white; border: none; border-radius: 5px; cursor: pointer; font-size: 15px;">
+                        Bill for Different Service
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Customer Selection Modal -->
+        <div id="customerSelectionModal" class="modal" style="display: none;">
+            <div class="modal-content" style="max-width: 600px;">
+                <span class="close" onclick="window.adminApp.closeCustomerModal()">&times;</span>
+                <h2>Customer Information</h2>
+
+                <div style="margin-bottom: 20px;">
+                    <div class="form-group" style="margin-bottom: 15px;">
+                        <label for="modalCustomerName" style="display: block; margin-bottom: 5px;">Name *</label>
+                        <div style="position: relative;">
+                            <input type="text"
+                                   id="modalCustomerName"
+                                   placeholder="Start typing to search existing customers..."
+                                   style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 5px;"
+                                   oninput="window.searchModalCustomer(this.value)"
+                                   autocomplete="off"
+                                   required>
+                            <div id="modalCustomerSearchResults" style="position: absolute; top: 100%; left: 0; right: 0; background: white; border: 1px solid #ddd; border-radius: 5px; max-height: 200px; overflow-y: auto; display: none; z-index: 1001; box-shadow: 0 2px 5px rgba(0,0,0,0.1);"></div>
+                        </div>
+                    </div>
+
+                    <div class="form-group" style="margin-bottom: 15px;">
+                        <label for="modalCustomerEmail" style="display: block; margin-bottom: 5px;">Email *</label>
+                        <input type="email"
+                               id="modalCustomerEmail"
+                               placeholder="customer@example.com"
+                               style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 5px;"
+                               required>
+                    </div>
+
+                    <div class="form-group" style="margin-bottom: 15px;">
+                        <label for="modalCustomerPhone" style="display: block; margin-bottom: 5px;">Phone</label>
+                        <input type="tel"
+                               id="modalCustomerPhone"
+                               placeholder="(555) 123-4567"
+                               style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 5px;">
+                    </div>
+
+                    <!-- Payment Method Info Display -->
+                    <div id="modalPaymentMethodInfo" style="display: none; margin-bottom: 15px; padding: 12px; background: #e8f5e9; border: 1px solid #4caf50; border-radius: 8px;">
+                        <div style="display: flex; align-items: center; gap: 8px; font-size: 14px; color: #2e7d32;">
+                            <span style="font-size: 18px;">💳</span>
+                            <span id="modalPaymentMethodDetails" style="font-weight: 500;"></span>
+                            <span style="color: #4caf50; font-size: 16px;">✓</span>
+                        </div>
+                    </div>
+
+                    <h3 style="margin-top: 20px; margin-bottom: 10px;">Boat Information</h3>
+
+                    <div class="form-group" style="margin-bottom: 15px;">
+                        <label for="modalBoatName" style="display: block; margin-bottom: 5px;">Boat Name</label>
+                        <input type="text"
+                               id="modalBoatName"
+                               placeholder="Serenity"
+                               style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 5px;">
+                    </div>
+
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
+                        <div class="form-group">
+                            <label for="modalBoatLength" style="display: block; margin-bottom: 5px;">Boat Length (ft)</label>
+                            <input type="number"
+                                   id="modalBoatLength"
+                                   placeholder="35"
+                                   min="20"
+                                   max="100"
+                                   style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 5px;">
+                        </div>
+
+                        <div class="form-group">
+                            <label for="modalBoatMake" style="display: block; margin-bottom: 5px;">Make</label>
+                            <input type="text"
+                                   id="modalBoatMake"
+                                   placeholder="Catalina"
+                                   style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 5px;">
+                        </div>
+                    </div>
+
+                    <div class="form-group" style="margin-top: 15px;">
+                        <label for="modalBoatModel" style="display: block; margin-bottom: 5px;">Model</label>
+                        <input type="text"
+                               id="modalBoatModel"
+                               placeholder="Catalina 350"
+                               style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 5px;">
+                    </div>
+                </div>
+
+                <!-- Payment Method Section -->
+                <div id="modalPaymentSection" style="margin-top: 30px; padding-top: 20px; border-top: 2px solid #e0e0e0;">
+                    <h3 style="margin-bottom: 15px;">💳 Payment Information</h3>
+                    <div id="modalPaymentInfo" style="margin-bottom: 15px; padding: 12px; background: #f0f7ff; border-radius: 8px; font-size: 14px; color: #0066cc;">
+                        <!-- Payment info/instructions will be shown here -->
+                    </div>
+                    <form id="modal-payment-form" autocomplete="off" data-private="true">
+                        <div id="modal-card-element" style="padding: 12px; border: 1px solid #ddd; border-radius: 6px; background: white; margin-bottom: 10px;">
+                            <!-- Stripe card element will be mounted here -->
+                        </div>
+                        <div id="modal-card-errors" role="alert" style="color: #e74c3c; margin-bottom: 10px; min-height: 20px; font-size: 14px;"></div>
+                    </form>
+                </div>
+
+                <div class="form-actions" style="margin-top: 20px; display: flex; justify-content: space-between; align-items: center;">
+                    <button type="button" onclick="window.adminApp.closeCustomerModal()" class="cancel-btn">Cancel</button>
+                    <button type="button" onclick="window.adminApp.processCustomerAndPayment()" class="submit-btn" id="modalChargeButton">
+                        💳 Charge Customer <span id="modalChargeAmount"></span>
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <div class="container">
+            <!-- Universal Customer Search -->
+            <div class="universal-search-container">
+                <div class="universal-search-box">
+                    <div class="search-icon">🔍</div>
+                    <input
+                        type="text"
+                        id="universalSearch"
+                        placeholder="Search customers by name, boat, or email..."
+                        autocomplete="off"
+                        class="universal-search-input"
+                    />
+                    <div id="universalSearchResults" class="universal-search-results"></div>
+                </div>
+            </div>
+
+            <!-- Service Selection -->
+            <div class="service-selector">
+                <h2>Select Service Type</h2>
+                <div id="simpleServiceButtons" class="simple-service-buttons">
+                    <button onclick="window.selectServiceDirect('recurring_cleaning')" class="simple-service-btn" style="padding: 16px 20px; background: linear-gradient(135deg, #5B3A99 0%, #6B4A9E 100%); color: white; border: none; border-radius: 10px; cursor: pointer; font-size: 15px; font-weight: 600; box-shadow: 0 4px 6px rgba(91, 58, 153, 0.3); transition: all 0.3s; text-shadow: 0 1px 2px rgba(0,0,0,0.2); min-height: 60px; display: flex; align-items: center; justify-content: center;">
+                        🔄 Recurring Cleaning
+                    </button>
+                    <button onclick="window.selectServiceDirect('onetime_cleaning')" class="simple-service-btn" style="padding: 16px 20px; background: linear-gradient(135deg, #1E5F8E 0%, #2471A3 100%); color: white; border: none; border-radius: 10px; cursor: pointer; font-size: 15px; font-weight: 600; box-shadow: 0 4px 6px rgba(30, 95, 142, 0.3); transition: all 0.3s; text-shadow: 0 1px 2px rgba(0,0,0,0.2); min-height: 60px; display: flex; align-items: center; justify-content: center;">
+                        ✨ One-Time Cleaning
+                    </button>
+                    <button onclick="window.selectServiceDirect('underwater_inspection')" class="simple-service-btn" style="padding: 16px 20px; background: linear-gradient(135deg, #0E7BA7 0%, #138FB5 100%); color: white; border: none; border-radius: 10px; cursor: pointer; font-size: 15px; font-weight: 600; box-shadow: 0 4px 6px rgba(14, 123, 167, 0.3); transition: all 0.3s; text-shadow: 0 1px 2px rgba(0,0,0,0.2); min-height: 60px; display: flex; align-items: center; justify-content: center;">
+                        🔍 Underwater Inspection
+                    </button>
+                    <button onclick="window.selectServiceDirect('item_recovery')" class="simple-service-btn" style="padding: 16px 20px; background: linear-gradient(135deg, #C73E79 0%, #D84361 100%); color: white; border: none; border-radius: 10px; cursor: pointer; font-size: 15px; font-weight: 600; box-shadow: 0 4px 6px rgba(199, 62, 121, 0.3); transition: all 0.3s; text-shadow: 0 1px 2px rgba(0,0,0,0.2); min-height: 60px; display: flex; align-items: center; justify-content: center;">
+                        🔑 Item Recovery
+                    </button>
+                    <button onclick="window.selectServiceDirect('propeller_service')" class="simple-service-btn" style="padding: 16px 20px; background: linear-gradient(135deg, #D68910 0%, #E59E1B 100%); color: white; border: none; border-radius: 10px; cursor: pointer; font-size: 15px; font-weight: 600; box-shadow: 0 4px 6px rgba(214, 137, 16, 0.3); transition: all 0.3s; text-shadow: 0 1px 2px rgba(0,0,0,0.2); min-height: 60px; display: flex; align-items: center; justify-content: center;">
+                        ⚙️ Propeller Service
+                    </button>
+                    <button onclick="window.selectServiceDirect('anodes_only')" class="simple-service-btn" style="padding: 16px 20px; background: linear-gradient(135deg, #C0392B 0%, #E74C3C 100%); color: white; border: none; border-radius: 10px; cursor: pointer; font-size: 15px; font-weight: 600; box-shadow: 0 4px 6px rgba(192, 57, 43, 0.3); transition: all 0.3s; text-shadow: 0 1px 2px rgba(0,0,0,0.2); min-height: 60px; display: flex; align-items: center; justify-content: center;">
+                        🔋 Anodes Only
+                    </button>
+                </div>
+
+                <div id="wizardContainer" style="display: none;">
+                    <div id="wizardContent"></div>
+                </div>
+            </div>
+
+            <div id="boatConfigSection" class="boat-config-section" style="display: none !important; /* PERMANENTLY HIDDEN - handled by wizard */">
+                <!-- Legacy boat configuration - now handled by wizard -->
+            </div>
+
+            <div class="boat-details" style="display: none !important; /* PERMANENTLY HIDDEN - handled by wizard */">
+                <!-- Legacy boat details - now handled by wizard -->
+            </div>
+
+            <!-- Dynamic Pricing Display -->
+            <div id="pricingDisplay" class="pricing-display" style="display: none;">
+                <h3>💰 Price Breakdown</h3>
+                <div id="priceBreakdown" class="price-breakdown"></div>
+                <div class="charge-button-container" style="margin-top: 20px;">
+                    <input type="number" id="editableAmount" class="amount-input" step="0.01" min="0"
+                           style="width: 150px; padding: 10px; font-size: 18px; margin-right: 10px;"
+                           onchange="updateChargeButton()">
+                    <button id="pricingChargeButton" class="charge-button" onclick="chargeCustomer()" disabled>
+                        💳 Charge Customer
+                    </button>
+                </div>
+            </div>
+
+            <!-- Charge Summary -->
+            <div class="charge-summary" style="display: none;">
+                <h3>💳 Charge Summary</h3>
+                <div class="charge-details" id="chargeDetails">
+                    <div id="chargeSummaryContent">
+                        <p>Select a customer and service to see pricing</p>
+                    </div>
+                </div>
+                <!-- Payment Method Selector -->
+                <div class="payment-method-selector">
+                    <label for="paymentMethodSelect">Payment Method:</label>
+                    <select id="paymentMethodSelect" onchange="window.updatePaymentMethodUI()">
+                        <option value="stripe">💳 Credit Card (Stripe)</option>
+                        <option value="zoho">🏦 External Payment (Zoho/Other)</option>
+                        <option value="cash">💵 Cash</option>
+                        <option value="check">📝 Check</option>
+                        <option value="pending">⏳ Payment Pending</option>
+                    </select>
+                    <input type="text" id="paymentNotes" placeholder="Optional: Add payment reference (e.g., Zoho invoice #, check #)" style="display: none;">
+                </div>
+                <div class="charge-button-container">
+                    <button id="chargeButton" class="charge-button" onclick="window.adminApp.chargeCustomer()">
+                        💳 Charge Customer
+                    </button>
+                    <button class="charge-button quote-button" onclick="window.adminApp.generateQuote()">
+                        📄 Generate Quote
+                    </button>
+                </div>
+            </div>
+
+            <!-- Result Display -->
+            <div id="chargeResult" class="charge-result"></div>
+
+            <!-- Anode Management Section -->
+            <div id="hiddenAnodeSection" class="anode-section">
+                <div class="daily-schedule">
+                    <h3>📅 Daily Schedule</h3>
+                    <div class="schedule-date-selector">
+                        <input type="date" id="serviceDate" value="">
+                        <button onclick="loadDailySchedule()" class="customer-btn">Load Schedule</button>
+                    </div>
+                    <div id="boatScheduleList" class="boat-schedule-list"></div>
+                </div>
+
+                <div class="anode-selector">
+                    <h3>🔋 Select Anodes</h3>
+                    <div id="anodeCategories" class="anode-categories"></div>
+                    <div id="anodeGrid" class="anode-grid"></div>
+
+                    <div class="anode-cart">
+                        <h4>Shopping Cart</h4>
+                        <div id="cartItems"></div>
+                        <div class="cart-total">
+                            <div class="total-row">
+                                <span>Subtotal:</span>
+                                <span id="cartSubtotal">$0.00</span>
+                            </div>
+                            <div class="total-row">
+                                <span>Labor:</span>
+                                <span id="cartLabor">$0.00</span>
+                            </div>
+                            <div class="total-row">
+                                <span>Tax:</span>
+                                <span id="cartTax">$0.00</span>
+                            </div>
+                            <div class="total-row grand-total">
+                                <span>Total:</span>
+                                <span id="cartTotal">$0.00</span>
+                            </div>
+                        </div>
+
+                        <div style="margin-top: 20px;">
+                            <h5>Pricing Settings</h5>
+                            <div class="input-group">
+                                <label>Tax Rate (%)</label>
+                                <input type="number" id="taxRate" value="10.75" step="0.01" onchange="updateAnodeCart()">
+                            </div>
+                            <div class="input-group">
+                                <label>Markup (%)</label>
+                                <input type="number" id="markupRate" value="20" step="1" onchange="updateAnodeCart()">
+                            </div>
+                            <div class="input-group">
+                                <label>Labor per Anode ($)</label>
+                                <input type="number" id="laborCharge" value="15" step="1" onchange="updateAnodeCart()">
+                            </div>
+                        </div>
+
+                        <button class="charge-anode-btn" onclick="chargeAnodes()" disabled>
+                            💳 Charge Customer
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Hidden inputs for tracking state -->
+    <input type="hidden" id="serviceKey" value="">
+    <input type="hidden" id="servicePrice" value="0">
+    <input type="hidden" id="anodesToInstall" value="0">
+
+    <!-- External Scripts -->
+    <script src="https://js.stripe.com/v3/"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+    <!-- Initialize Supabase and Environment Variables -->
+    <script>
+        // Initialize Supabase globally using CDN
+        const supabaseUrl = 'https://fzygakldvvzxmahkdylq.supabase.co';
+        const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZ6eWdha2xkdnZ6eG1haGtkeWxxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTQwODM4OTgsImV4cCI6MjA2OTY1OTg5OH0.8BNDF5zmpk2HFdprTjsdOWTDh_XkAPdTnGo7omtiVIk';
+        window.supabase = supabase.createClient(supabaseUrl, supabaseKey);
+        console.log('Supabase initialized:', window.supabase);
+
+        // Define environment variables globally for module scripts
+        // Using TEST mode Stripe keys (both frontend and backend must match)
+        // Frontend: pk_test_s9GdaTKq62yzyAGjg2IHWI67
+        // Backend (Edge Function): Configured in Vercel environment variables
+        window.ENV = {
+            VITE_SUPABASE_URL: supabaseUrl,
+            VITE_SUPABASE_ANON_KEY: supabaseKey,
+            VITE_STRIPE_PUBLISHABLE_KEY: 'pk_test_s9GdaTKq62yzyAGjg2IHWI67'
+        };
+    </script>
+
+    <!-- Define selectServiceDirect immediately for button handlers -->
+    <script>
+        window.selectServiceDirect = function(serviceKey) {
+            console.log('Service selected:', serviceKey);
+            window.currentServiceKey = serviceKey;
+
+            // Function to update adminApp when it's ready
+            const updateAdminApp = () => {
+                if (window.adminApp) {
+                    window.adminApp.currentServiceKey = serviceKey;
+                    console.log('Set adminApp.currentServiceKey to:', serviceKey);
+
+                    // Also call selectService on adminApp to ensure proper initialization
+                    if (typeof window.adminApp.selectService === 'function') {
+                        window.adminApp.selectService(serviceKey);
+                    }
+                    return true;
+                }
+                return false;
+            };
+
+            // Try to update adminApp immediately
+            if (!updateAdminApp()) {
+                // If not ready, retry after a short delay
+                setTimeout(updateAdminApp, 100);
+                setTimeout(updateAdminApp, 500);
+            }
+
+            // Determine if it's a cleaning service
+            const isCleaningService = serviceKey === 'recurring_cleaning' || serviceKey === 'onetime_cleaning';
+
+            // Call renderConsolidatedForm
+            if (window.renderConsolidatedForm) {
+                console.log('Calling renderConsolidatedForm for', serviceKey, 'isCleaningService:', isCleaningService);
+                window.renderConsolidatedForm(isCleaningService, serviceKey);
+            } else {
+                console.error('renderConsolidatedForm not available');
+                // Try to load it
+                setTimeout(() => {
+                    if (window.renderConsolidatedForm) {
+                        console.log('Calling renderConsolidatedForm (delayed) for', serviceKey);
+                        window.renderConsolidatedForm(isCleaningService, serviceKey);
+                    } else {
+                        console.error('renderConsolidatedForm still not available after delay');
+                    }
+                }, 100);
+            }
+
+            // Update pricing
+            if (window.updatePricing) {
+                window.updatePricing();
+            }
+
+            // Update charge summary
+            if (window.updateChargeSummary) {
+                window.updateChargeSummary();
+            }
+        };
+    </script>
+
+    <!-- Load modules -->
+
+    <!-- Hidden inputs for form data -->
+    <input type="hidden" id="selectedCustomerId" value="">
+    <input type="hidden" id="boatName" value="">
+    <input type="hidden" id="boatLength" value="35">
+    <input type="hidden" id="paintCondition" value="good">
+    <input type="hidden" id="paint_condition" value="good">
+    <input type="hidden" id="growthLevel" value="minimal">
+    <input type="hidden" id="growth_level" value="minimal">
+    <input type="hidden" id="actualGrowthLevel" value="0">
+    <input type="hidden" id="actualPaintCondition" value="excellent">
+    <input type="hidden" id="totalCost" value="0">
+    <input type="hidden" id="totalCostDisplay" value="0">
+    <input type="hidden" id="has_twin_engines" value="">
+
+    <!-- Hidden radio groups for boat/hull configuration -->
+    <div style="display:none;">
+        <input type="radio" name="boat_type" value="sailboat" checked>
+        <input type="radio" name="boat_type" value="powerboat">
+        <input type="radio" name="hull_type" value="monohull" checked>
+        <input type="radio" name="hull_type" value="catamaran">
+        <input type="radio" name="hull_type" value="trimaran">
+    </div>
+
+    <!-- Shared Navigation Initialization -->
+
+    <!-- Supabase Authentication -->
+
+    <!-- Universal Search Functionality -->
+    <script>
+        // Universal search functionality
+        let universalSearchTimeout = null;
+        let universalSearchResults = [];
+
+        window.initUniversalSearch = function() {
+            const searchInput = document.getElementById('universalSearch');
+            const resultsDiv = document.getElementById('universalSearchResults');
+
+            if (!searchInput) return;
+
+            // Search on input
+            searchInput.addEventListener('input', function(e) {
+                const query = e.target.value;
+
+                // Clear previous timeout
+                if (universalSearchTimeout) {
+                    clearTimeout(universalSearchTimeout);
+                }
+
+                // Hide results if query is empty
+                if (!query || query.length < 2) {
+                    resultsDiv.style.display = 'none';
+                    universalSearchResults = [];
+                    return;
+                }
+
+                // Debounce search
+                universalSearchTimeout = setTimeout(async () => {
+                    try {
+                        const API_BASE_URL = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
+                            ? 'http://localhost:3001/api'
+                            : '/api';
+
+                        const response = await fetch(`${API_BASE_URL}/stripe-customers?search=${encodeURIComponent(query)}`);
+                        const customers = await response.json();
+
+                        if (customers && customers.length > 0) {
+                            universalSearchResults = customers;
+                            displayUniversalSearchResults(customers, resultsDiv);
+                        } else {
+                            universalSearchResults = [];
+                            resultsDiv.innerHTML = '<div class="search-result-item no-results">No customers found</div>';
+                            resultsDiv.style.display = 'block';
+                        }
+                    } catch (error) {
+                        console.error('Error searching customers:', error);
+                        resultsDiv.style.display = 'none';
+                    }
+                }, 300);
+            });
+
+            // Enter key to select first result
+            searchInput.addEventListener('keydown', function(e) {
+                if (e.key === 'Enter') {
+                    e.preventDefault();
+                    if (universalSearchResults && universalSearchResults.length > 0) {
+                        window.selectUniversalSearchCustomer(universalSearchResults[0]);
+                    }
+                }
+            });
+
+            // Click outside to close
+            document.addEventListener('click', function(e) {
+                if (!searchInput.contains(e.target) && !resultsDiv.contains(e.target)) {
+                    resultsDiv.style.display = 'none';
+                }
+            });
+        };
+
+        function displayUniversalSearchResults(customers, resultsDiv) {
+            const html = customers.map(customer => {
+                const boatName = customer.boat_name || 'No boat';
+                const email = customer.email || '';
+
+                return `
+                    <div class="search-result-item" onclick="window.selectUniversalSearchCustomer(${JSON.stringify(customer).replace(/"/g, '&quot;')})">
+                        <div class="customer-name">${customer.name}</div>
+                        <div class="customer-details">
+                            ${boatName !== 'No boat' ? `<span class="boat-badge">🚤 ${boatName}</span>` : ''}
+                            <span class="email-badge">📧 ${email}</span>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+
+            resultsDiv.innerHTML = html;
+            resultsDiv.style.display = 'block';
+        }
+
+        window.selectUniversalSearchCustomer = async function(customer) {
+            console.log('Selected customer:', customer);
+
+            // Hide search results
+            document.getElementById('universalSearchResults').style.display = 'none';
+
+            // Clear search input
+            document.getElementById('universalSearch').value = '';
+
+            // Store customer in adminApp
+            if (window.adminApp) {
+                window.adminApp.selectedCustomer = customer;
+                window.selectedCustomer = customer;
+            }
+
+            // Fetch customer services
+            try {
+                const API_BASE_URL = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
+                    ? 'http://localhost:3001/api'
+                    : '/api';
+
+                const response = await fetch(`${API_BASE_URL}/customer-services?customerId=${customer.id}`);
+                const data = await response.json();
+
+                if (data.success && data.services && data.services.length > 0) {
+                    // Customer has recurring services - show selection modal
+                    window.showServiceSelectionModal(customer, data.services);
+                } else {
+                    // No recurring services - proceed with manual service selection
+                    window.proceedWithManualService(customer);
+                }
+            } catch (error) {
+                console.error('Error fetching customer services:', error);
+                // On error, proceed with manual selection
+                window.proceedWithManualService(customer);
+            }
+        };
+
+        window.showServiceSelectionModal = function(customer, services) {
+            const modal = document.getElementById('serviceSelectionModal');
+            const customerInfo = document.getElementById('customerServiceInfo');
+            const servicesList = document.getElementById('existingServicesList');
+
+            // Show customer info
+            customerInfo.innerHTML = `
+                <div style="font-weight: 600; font-size: 16px; margin-bottom: 5px;">${customer.name}</div>
+                ${customer.boat_name ? `<div style="font-size: 14px; color: #666;">🚤 ${customer.boat_name}</div>` : ''}
+                <div style="font-size: 14px; color: #666;">${customer.email}</div>
+            `;
+
+            // Show services list
+            const servicesHTML = services.map(service => {
+                const serviceIcon = {
+                    'recurring_cleaning': '🔄',
+                    'onetime_cleaning': '✨',
+                    'underwater_inspection': '🔍',
+                    'item_recovery': '🔑',
+                    'propeller_service': '⚙️',
+                    'anodes_only': '🔋'
+                }[service.service_type] || '📋';
+
+                return `
+                    <button onclick='window.selectExistingService(${JSON.stringify(service).replace(/'/g, "\\'")})'
+                            class="service-selection-btn"
+                            style="width: 100%; padding: 15px; margin-bottom: 10px; background: white; border: 2px solid #ddd; border-radius: 8px; cursor: pointer; text-align: left; transition: all 0.2s;">
+                        <div style="font-weight: 600; font-size: 15px; margin-bottom: 5px;">
+                            ${serviceIcon} ${service.service_name}
+                        </div>
+                        <div style="font-size: 13px; color: #666;">
+                            ${service.frequency ? `Frequency: ${service.frequency}` : ''}
+                            ${service.boat_length ? ` • ${service.boat_length} ft` : ''}
+                            ${service.base_price ? ` • $${service.base_price}` : ''}
+                        </div>
+                    </button>
+                `;
+            }).join('');
+
+            servicesList.innerHTML = `
+                <div style="margin-bottom: 10px; font-weight: 500; color: #333;">Bill for recurring service:</div>
+                ${servicesHTML}
+            `;
+
+            // Show modal
+            modal.style.display = 'block';
+
+            // Add hover effect via CSS
+            const style = document.createElement('style');
+            style.textContent = '.service-selection-btn:hover { border-color: #4CAF50; background: #f0f9ff; }';
+            if (!document.getElementById('serviceSelectionStyles')) {
+                style.id = 'serviceSelectionStyles';
+                document.head.appendChild(style);
+            }
+        };
+
+        window.closeServiceSelectionModal = function() {
+            document.getElementById('serviceSelectionModal').style.display = 'none';
+        };
+
+        window.chooseManualService = function() {
+            window.closeServiceSelectionModal();
+            window.proceedWithManualService(window.selectedCustomer);
+        };
+
+        window.proceedWithManualService = function(customer) {
+            // Scroll to service selector
+            const serviceSelector = document.querySelector('.service-selector');
+            if (serviceSelector) {
+                serviceSelector.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            }
+
+            alert(`Customer selected: ${customer.name}${customer.boat_name ? ' (' + customer.boat_name + ')' : ''}\n\nNow select a service type below.`);
+        };
+
+        window.selectExistingService = function(service) {
+            console.log('Selected existing service:', service);
+
+            // Close modal
+            window.closeServiceSelectionModal();
+
+            // Store the selected service
+            window.selectedRecurringService = service;
+
+            // Pre-fill and auto-select the service
+            window.currentServiceKey = service.service_type;
+            if (window.adminApp) {
+                window.adminApp.currentServiceKey = service.service_type;
+            }
+
+            // Call service selection with pre-fill flag
+            window.selectServiceWithPrefill(service);
+        };
+
+        window.selectServiceWithPrefill = function(service) {
+            const serviceKey = service.service_type;
+
+            // Auto-select service button visually
+            document.querySelectorAll('.simple-service-btn').forEach(btn => {
+                btn.style.opacity = '0.6';
+                btn.style.transform = 'scale(0.95)';
+            });
+
+            // Highlight selected service
+            const selectedBtn = Array.from(document.querySelectorAll('.simple-service-btn'))
+                .find(btn => btn.textContent.toLowerCase().includes(serviceKey.replace('_', ' ')));
+
+            if (selectedBtn) {
+                selectedBtn.style.opacity = '1';
+                selectedBtn.style.transform = 'scale(1.05)';
+            }
+
+            // Determine if it's a cleaning service
+            const isCleaningService = serviceKey === 'recurring_cleaning' || serviceKey === 'onetime_cleaning';
+
+            // Render wizard with pre-fill flag
+            if (window.renderConsolidatedForm) {
+                window.renderConsolidatedForm(isCleaningService, serviceKey, true); // true = prefill mode
+            }
+
+            // Scroll to wizard
+            setTimeout(() => {
+                const wizardContainer = document.getElementById('wizardContainer');
+                if (wizardContainer) {
+                    wizardContainer.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                }
+            }, 200);
+        };
+
+        // Initialize when DOM is ready
+        document.addEventListener('DOMContentLoaded', function() {
+            // Wait a bit for other scripts to load
+            setTimeout(window.initUniversalSearch, 500);
+        });
+    </script>
+
+    <!-- Service Conditions Logging -->
+    <script>
+        // Helper function to save service conditions + anodes data to Portal
+        window.saveServiceConditionsLog = async function(conditionsData) {
+            try {
+                const API_BASE_URL = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
+                    ? 'http://localhost:3001/api'
+                    : '/api';
+
+                console.log('Saving service conditions:', conditionsData);
+
+                const response = await fetch(`${API_BASE_URL}/save-conditions`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(conditionsData)
+                });
+
+                const data = await response.json();
+
+                if (data.success) {
+                    console.log('✅ Conditions saved successfully:', data.condition_log_id);
+                    return data;
+                } else {
+                    console.error('❌ Failed to save conditions:', data.error);
+                    return null;
+                }
+            } catch (error) {
+                console.error('Error saving conditions:', error);
+                return null;
+            }
+        };
+
+        // Helper function to collect current conditions from form
+        window.collectServiceConditions = function() {
+            const conditions = {
+                customer_id: window.selectedCustomer?.id || null,
+                boat_id: window.selectedBoat?.id || null,
+                service_id: window.selectedRecurringService?.id || null,
+                service_type: window.currentServiceKey || '',
+                service_name: window.selectedRecurringService?.service_name || '',
+                service_date: new Date().toISOString().split('T')[0],
+                service_time: new Date().toTimeString().split(' ')[0]
+            };
+
+            // Collect paint condition
+            const paintCondition = document.getElementById('actualPaintCondition')?.value ||
+                                  document.getElementById('wizardPaintCondition')?.value ||
+                                  document.getElementById('paintCondition')?.value;
+            if (paintCondition) {
+                conditions.paint_condition_overall = paintCondition;
+            }
+
+            // Collect growth level
+            const growthLevel = document.getElementById('actualGrowthLevel')?.value ||
+                               document.getElementById('wizardGrowthLevel')?.value ||
+                               document.getElementById('growthLevel')?.value;
+            if (growthLevel) {
+                conditions.growth_level = growthLevel;
+            }
+
+            // Collect anode conditions
+            const anodeConditions = [];
+            document.querySelectorAll('[id^="anodeCondition_"]').forEach(elem => {
+                const anodeType = elem.id.replace('anodeCondition_', '');
+                if (elem.value) {
+                    anodeConditions.push({
+                        type: anodeType,
+                        condition: elem.value
+                    });
+                }
+            });
+            if (anodeConditions.length > 0) {
+                conditions.anode_conditions = anodeConditions;
+            }
+
+            // Collect anodes installed (from shopping cart)
+            const anodesInstalled = [];
+            if (window.anodeCart && Object.keys(window.anodeCart).length > 0) {
+                Object.values(window.anodeCart).forEach(anode => {
+                    anodesInstalled.push({
+                        id: anode.id,
+                        name: anode.name,
+                        quantity: anode.quantity,
+                        unit_price: anode.list_price,
+                        inventory_id: anode.inventory_id
+                    });
+                });
+            }
+            if (anodesInstalled.length > 0) {
+                conditions.anodes_installed = anodesInstalled;
+            }
+
+            // Collect through-hull condition
+            const thruHullCondition = document.querySelector('input[name="wizard_thru_hull"]:checked')?.value;
+            if (thruHullCondition) {
+                conditions.thru_hull_condition = thruHullCondition;
+            }
+
+            const thruHullNotes = document.getElementById('wizardThruHullNotes')?.value;
+            if (thruHullNotes) {
+                conditions.thru_hull_notes = thruHullNotes;
+            }
+
+            // Collect propeller conditions
+            const prop1Condition = document.getElementById('wizardPropeller1')?.value;
+            if (prop1Condition) {
+                conditions.propeller_1_condition = prop1Condition;
+            }
+
+            const prop2Condition = document.getElementById('wizardPropeller2')?.value;
+            if (prop2Condition) {
+                conditions.propeller_2_condition = prop2Condition;
+            }
+
+            const propNotes = document.getElementById('wizardPropellerNotes')?.value;
+            if (propNotes) {
+                conditions.propeller_notes = propNotes;
+            }
+
+            return conditions;
+        };
+
+        // Wrap the existing charge customer function to add condition logging
+        // This will be called after successful payment
+        window.addEventListener('DOMContentLoaded', function() {
+            // Wait for adminApp to be ready
+            const checkAdminApp = setInterval(() => {
+                if (window.adminApp && window.adminApp.chargeCustomer) {
+                    // Store original chargeCustomer function
+                    const originalChargeCustomer = window.adminApp.chargeCustomer.bind(window.adminApp);
+
+                    // Wrap with condition logging
+                    window.adminApp.chargeCustomer = async function() {
+                        console.log('Enhanced chargeCustomer called - will log conditions');
+
+                        // Call original charge function
+                        const result = await originalChargeCustomer();
+
+                        // After successful charge, save conditions
+                        if (result !== false) { // Assuming the function returns false on error
+                            const conditions = window.collectServiceConditions();
+
+                            // Add order_id from the charge result if available
+                            // This would need to be adapted based on actual charge function return value
+                            if (window.lastChargePaymentIntentId) {
+                                conditions.order_id = window.lastChargePaymentIntentId;
+                            }
+
+                            // Save conditions to database
+                            await window.saveServiceConditionsLog(conditions);
+                        }
+
+                        return result;
+                    };
+
+                    clearInterval(checkAdminApp);
+                    console.log('✅ Condition logging integrated into charge flow');
+                }
+            }, 100);
+
+            // Timeout after 10 seconds
+            setTimeout(() => clearInterval(checkAdminApp), 10000);
+        });
+    </script>
+
+    <!-- Core Admin Functionality -->
+</body>
+</html>
