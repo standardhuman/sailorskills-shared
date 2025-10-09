@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Customer Management - Sailor Skills Admin</title>
+  <link rel="stylesheet" href="/shared/src/ui/design-tokens.css">
+  <link rel="stylesheet" href="/shared/src/ui/styles.css">
+  <link rel="stylesheet" href="/css/admin.css">
+</head>
+<body>
+  <!-- Navigation will be injected by shared package -->
+  <div id="nav-container"></div>
+
+  <main class="dashboard-container">
+    <a href="/dashboard.html" class="back-link">← Back to Dashboard</a>
+
+    <!-- Tab Navigation -->
+    <div class="tab-navigation">
+      <button class="tab-button active" data-tab="overview">📊 Overview</button>
+      <button class="tab-button" data-tab="datatable">📋 Data Table</button>
+    </div>
+
+    <!-- Overview Tab -->
+    <div id="overview-tab" class="tab-content active">
+      <!-- Search and Filters -->
+      <section class="search-section">
+        <input type="text" id="customer-search" class="search-input" placeholder="🔍 Search customers by name or email...">
+        <div class="filter-controls">
+          <select id="sort-by" class="filter-select">
+            <option value="name">Sort by Name</option>
+            <option value="ltv">Sort by Lifetime Value</option>
+            <option value="recent">Sort by Recent Activity</option>
+            <option value="orders">Sort by Order Count</option>
+          </select>
+        </div>
+      </section>
+
+      <!-- Customer Stats -->
+      <div class="stats-row">
+        <div class="stat-card">
+          <div class="stat-value" id="total-customers">0</div>
+          <div class="stat-label">Total Customers</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-value" id="active-customers">0</div>
+          <div class="stat-label">Active (30 days)</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-value" id="avg-ltv">$0</div>
+          <div class="stat-label">Average LTV</div>
+        </div>
+      </div>
+
+      <!-- Customer List -->
+      <section class="customer-list-section">
+        <div id="customer-list" class="customer-list">
+          <div class="widget-loading">Loading customers...</div>
+        </div>
+      </section>
+    </div>
+
+    <!-- Data Table Tab -->
+    <div id="datatable-tab" class="tab-content">
+      <!-- Data Table Controls -->
+      <div class="datatable-controls">
+        <div class="datatable-controls-left">
+          <input type="text" id="datatable-search" class="search-input" placeholder="🔍 Search all fields...">
+          <button id="filter-toggle" class="btn-secondary">🔧 Filters</button>
+          <button id="columns-toggle" class="btn-secondary">⚙️ Columns</button>
+        </div>
+        <div class="datatable-controls-right">
+          <button id="export-csv" class="btn-primary">📄 Export CSV</button>
+          <button id="export-excel" class="btn-primary">📊 Export Excel</button>
+        </div>
+      </div>
+
+      <!-- Filter Panel (hidden by default) -->
+      <div id="filter-panel" class="filter-panel hidden">
+        <div class="filter-row">
+          <label>Date Range:</label>
+          <input type="date" id="filter-date-start" class="filter-input">
+          <span>to</span>
+          <input type="date" id="filter-date-end" class="filter-input">
+        </div>
+        <div class="filter-row">
+          <label>Min LTV:</label>
+          <input type="number" id="filter-ltv-min" class="filter-input" placeholder="$0">
+          <label>Max LTV:</label>
+          <input type="number" id="filter-ltv-max" class="filter-input" placeholder="No limit">
+        </div>
+        <div class="filter-row">
+          <label>Min Orders:</label>
+          <input type="number" id="filter-orders-min" class="filter-input" placeholder="0">
+          <label>Has Boats:</label>
+          <select id="filter-has-boats" class="filter-input">
+            <option value="">All</option>
+            <option value="yes">Yes</option>
+            <option value="no">No</option>
+          </select>
+        </div>
+        <div class="filter-actions">
+          <button id="apply-filters" class="btn-primary">Apply Filters</button>
+          <button id="clear-filters" class="btn-secondary">Clear</button>
+        </div>
+      </div>
+
+      <!-- Column Selector Panel (hidden by default) -->
+      <div id="column-panel" class="column-panel hidden">
+        <h4>Show/Hide Columns</h4>
+        <div id="column-checkboxes" class="column-checkboxes">
+          <!-- Will be populated by JS -->
+        </div>
+      </div>
+
+      <!-- Pagination Info -->
+      <div class="datatable-info">
+        <div class="datatable-count">
+          Showing <span id="showing-count">0</span> of <span id="total-count">0</span> customers
+        </div>
+        <div class="datatable-pagination">
+          <label>Rows per page:</label>
+          <select id="rows-per-page" class="filter-input">
+            <option value="50">50</option>
+            <option value="100">100</option>
+            <option value="500">500</option>
+            <option value="all">All</option>
+          </select>
+        </div>
+      </div>
+
+      <!-- Data Table Container -->
+      <div class="datatable-container">
+        <table id="customers-datatable" class="datatable">
+          <thead>
+            <tr id="datatable-headers">
+              <!-- Headers will be populated by JS -->
+            </tr>
+          </thead>
+          <tbody id="datatable-body">
+            <tr>
+              <td colspan="20" style="text-align: center; padding: 2rem;">
+                <div class="widget-loading">Loading customer data...</div>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- Pagination Controls -->
+      <div class="datatable-pagination-controls">
+        <button id="prev-page" class="btn-secondary" disabled>← Previous</button>
+        <span id="page-info">Page 1 of 1</span>
+        <button id="next-page" class="btn-secondary" disabled>Next →</button>
+      </div>
+    </div>
+  </main>
+
+  <!-- Customer Detail Modal -->
+  <div id="customer-modal" class="modal hidden">
+    <div class="modal-backdrop"></div>
+    <div class="modal-content customer-modal-content">
+      <button class="modal-close" onclick="closeCustomerModal()">×</button>
+      <div id="customer-detail">
+        <!-- Customer detail will be loaded here -->
+      </div>
+    </div>
+  </div>
+
+  <!-- Scripts -->
+  <!-- Load Supabase -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <!-- Load SheetJS for Excel export -->
+  <script src="https://cdn.sheetjs.com/xlsx-0.20.1/package/dist/xlsx.full.min.js"></script>
+
+  <!-- Shared Navigation Initialization -->
+  <script type="module">
+    import { initNavigation } from '/shared/src/ui/navigation.js';
+    initNavigation({
+      currentPage: 'admin',
+      breadcrumbs: [
+        { label: 'Home', url: 'https://www.sailorskills.com/' },
+        { label: 'Admin', url: '/dashboard.html' },
+        { label: 'Customers' }
+      ]
+    });
+  </script>
+
+  <script type="module" src="/js/supabase-auth.js"></script>
+  <script type="module" src="/js/customers.js"></script>
+</body>
+</html>
