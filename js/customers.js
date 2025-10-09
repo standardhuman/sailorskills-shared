@@ -534,23 +534,42 @@ function setupDataTableEventListeners() {
  */
 async function loadDataTable() {
   try {
+    console.log('📊 Loading data table, allCustomers.length:', allCustomers.length);
+
     // Reuse the allCustomers data if already loaded
     if (allCustomers.length > 0) {
       dataTableState.data = allCustomers.map(customer => {
-        const payments = customer.payments || [];
-        const successfulPayments = payments.filter(p => p.status === 'succeeded');
-        const totalPaid = successfulPayments.reduce((sum, p) => sum + parseFloat(p.amount || 0), 0);
-        const pendingPayments = payments.filter(p => p.status === 'pending');
-        const pendingAmount = pendingPayments.reduce((sum, p) => sum + parseFloat(p.amount || 0), 0);
-        const avgOrderValue = successfulPayments.length > 0 ? totalPaid / successfulPayments.length : 0;
+        // Check if we have raw payments array or already-calculated values
+        if (customer.payments && Array.isArray(customer.payments)) {
+          // Fresh data with payments array - calculate everything
+          const payments = customer.payments;
+          const successfulPayments = payments.filter(p => p.status === 'succeeded');
+          const totalPaid = successfulPayments.reduce((sum, p) => sum + parseFloat(p.amount || 0), 0);
+          const pendingPayments = payments.filter(p => p.status === 'pending');
+          const pendingAmount = pendingPayments.reduce((sum, p) => sum + parseFloat(p.amount || 0), 0);
+          const avgOrderValue = successfulPayments.length > 0 ? totalPaid / successfulPayments.length : 0;
 
-        return {
-          ...customer,
-          totalPaid,
-          pendingAmount,
-          avgOrderValue
-        };
+          return {
+            ...customer,
+            totalPaid,
+            pendingAmount,
+            avgOrderValue
+          };
+        } else {
+          // Already-processed data from allCustomers - use existing values
+          const totalPaid = customer.ltv || 0;
+          const pendingAmount = 0; // Not calculated in overview tab
+          const avgOrderValue = customer.orderCount > 0 ? totalPaid / customer.orderCount : 0;
+
+          return {
+            ...customer,
+            totalPaid,
+            pendingAmount,
+            avgOrderValue
+          };
+        }
       });
+      console.log(`✅ Data table populated from allCustomers: ${dataTableState.data.length} rows`);
     } else {
       // Load customers for the first time
       const { data: customers, error } = await supabase
@@ -653,6 +672,7 @@ function collectFilters() {
  * Apply filters and search
  */
 function applyFiltersAndRender() {
+  console.log('🔍 Applying filters, dataTableState.data.length:', dataTableState.data.length);
   let filtered = [...dataTableState.data];
 
   // Apply search
@@ -693,6 +713,7 @@ function applyFiltersAndRender() {
   }
 
   dataTableState.filteredData = filtered;
+  console.log(`✅ Filtered data: ${filtered.length} rows`);
   renderDataTable();
 }
 
@@ -736,6 +757,7 @@ function sortData(column) {
  * Render data table
  */
 function renderDataTable() {
+  console.log('🎨 Rendering data table, filteredData.length:', dataTableState.filteredData.length);
   const visibleColumns = DATA_TABLE_COLUMNS.filter(col => col.visible);
 
   // Render headers
