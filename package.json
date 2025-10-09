@@ -7,13 +7,13 @@
   "module": "dist/index.esm.js",
   "types": "dist/index.d.ts",
   "scripts": {
-    "build": "rollup -c",
+    "build": "echo 'No build needed - serving static files from dist/'",
     "test": "jest",
     "test:watch": "jest --watch",
     "test:playwright": "npx playwright test",
     "test:smart-billing": "npx playwright test tests/smart-billing-flow.spec.js",
     "lint": "eslint src/",
-    "prepublishOnly": "npm run build",
+    "prepublishOnly": "echo 'Build skipped'",
     "predeploy": "node check-production-ready.js",
     "verify-db": "node verify-migrations.js",
     "check-security": "node check-production-ready.js"
