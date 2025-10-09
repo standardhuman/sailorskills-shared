@@ -36,7 +36,7 @@ async function loadCustomers() {
     listContainer.innerHTML = '<div class="widget-loading">Loading customers...</div>';
 
     // Get customers with related data
-    const { data: customers, error } = await supabase
+    let { data: customers, error } = await supabase
       .from('customers')
       .select(`
         id,
@@ -49,7 +49,26 @@ async function loadCustomers() {
         boats(id, name)
       `);
 
-    if (error) throw error;
+    // If query fails due to missing tables, try without related data
+    if (error && error.code === '42703') {
+      console.warn('⚠️ Related tables missing, loading customers only:', error.message);
+      const simpleQuery = await supabase
+        .from('customers')
+        .select('id, name, email, phone, created_at');
+
+      if (simpleQuery.error) throw simpleQuery.error;
+      customers = simpleQuery.data;
+
+      // Show warning to user
+      listContainer.innerHTML = `
+        <div style="background: #fff3cd; border: 1px solid #ffc107; padding: 1rem; margin-bottom: 1rem; border-radius: 4px;">
+          ⚠️ <strong>Database Setup Required:</strong> Some tables are missing (boats, payments, service_orders).
+          <a href="/database/schema.sql" target="_blank" style="color: #0066cc;">Run the schema.sql migration</a> to enable full functionality.
+        </div>
+      `;
+    } else if (error) {
+      throw error;
+    }
 
     // Calculate metrics for each customer
     allCustomers = (customers || []).map(customer => {
