@@ -334,7 +334,22 @@ function initCustomersPage() {
 }
 
 // Wait for authentication before loading
-document.addEventListener('admin-authenticated', initCustomersPage);
+document.addEventListener('admin-authenticated', (event) => {
+  console.log('🎯 Received admin-authenticated event', event.detail);
+  initCustomersPage();
+});
+
+// Also check if already authenticated (in case event fired before module loaded)
+if (document.readyState === 'complete' || document.readyState === 'interactive') {
+  // DOM is ready, check if user is already authenticated
+  setTimeout(() => {
+    const authCheck = document.querySelector('.global-nav, .logout-btn');
+    if (authCheck && !document.querySelector('.customer-list-item')) {
+      console.log('🔄 Already authenticated, initializing customer page...');
+      initCustomersPage();
+    }
+  }, 100);
+}
 
 // ============================================================================
 // DATA TABLE FUNCTIONALITY
