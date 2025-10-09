@@ -11,8 +11,8 @@ import { test, expect } from '@playwright/test';
  * - Tests now match actual UI flow with modals and wizard
  */
 
-// Use production URL from environment variable or default to latest deployment
-const BILLING_URL = process.env.TEST_URL || 'https://sailorskills-billing-c20mwqydc-brians-projects-bc2d3592.vercel.app/admin.html';
+// Use production URL
+const BILLING_URL = process.env.TEST_URL || 'https://sailorskills-billing.vercel.app/admin.html';
 const TEST_CUSTOMER_ID = 'cus_T0qqGn9xCudHEO'; // John Doe 2 - Test customer with sample services
 
 /**
@@ -25,33 +25,37 @@ const TEST_CUSTOMER_ID = 'cus_T0qqGn9xCudHEO'; // John Doe 2 - Test customer wit
  */
 async function setupPage(page) {
     await page.goto(BILLING_URL);
+    await page.waitForLoadState('networkidle');
+    await page.waitForTimeout(500);
 
-    // Wait for DOM to be loaded
-    await page.waitForLoadState('domcontentloaded');
+    // Check if auth is required
+    const authEmailInput = page.locator('#auth-email');
+    const authRequired = await authEmailInput.isVisible().catch(() => false);
 
-    // Check if auth modal is present and needs to be handled
-    const authModal = page.locator('.auth-modal');
-    const authModalVisible = await authModal.isVisible().catch(() => false);
+    if (authRequired) {
+        // Fill credentials
+        await authEmailInput.fill('standardhuman@gmail.com');
+        await page.locator('#auth-password').fill('KLRss!650');
 
-    if (authModalVisible) {
-        // If auth is required, fill in test credentials
-        // Note: Update these if actual auth is enforced
-        await page.fill('#auth-email', 'test@sailorskills.com');
-        await page.fill('#auth-password', 'testpassword');
-        await page.click('button[type="submit"]');
-        await page.waitForTimeout(1000);
+        // Click the Sign In button
+        const signInButton = page.locator('button:has-text("Sign In")');
+        await signInButton.click();
+
+        // Wait for auth to complete
+        await page.waitForTimeout(2000);
+
+        // Wait for auth modal to be removed
+        await page.waitForSelector('#auth-modal', { state: 'hidden', timeout: 10000 }).catch(() => {});
     }
 
-    // Wait for the universal search input to exist in DOM (not necessarily visible)
-    await page.waitForSelector('#universalSearch', { state: 'attached', timeout: 10000 });
+    // Wait for the universal search to be visible
+    await page.waitForSelector('#universalSearch', { state: 'visible', timeout: 10000 });
 
     // Wait for admin app to initialize
-    await page.waitForFunction(() => {
-        return typeof window.adminApp !== 'undefined';
-    }, { timeout: 5000 });
+    await page.waitForFunction(() => typeof window.adminApp !== 'undefined', { timeout: 5000 });
 
     // Give a moment for page to fully render
-    await page.waitForTimeout(1500);
+    await page.waitForTimeout(1000);
 }
 
 /**
