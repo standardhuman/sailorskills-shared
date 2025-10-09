@@ -6,20 +6,39 @@
 /**
  * Create standardized global navigation header
  * @param {Object} options - Navigation options
- * @param {string} options.currentPage - Current active page ('admin'|'billing'|'inventory'|'schedule'|'estimator')
+ * @param {string} options.currentPage - Current active page ('admin'|'portal'|'billing'|'inventory'|'schedule'|'estimator')
  * @param {Function} [options.onLogout] - Optional logout handler
  * @returns {string} HTML string for the navigation header
  */
 export function createGlobalNav(options = {}) {
     const { currentPage, onLogout } = options;
 
-    const navItems = [
-        { id: 'home', label: 'HOME', url: 'https://www.sailorskills.com/' },
-        { id: 'training', label: 'TRAINING', url: 'https://www.sailorskills.com/training' },
-        { id: 'diving', label: 'DIVING', url: 'https://www.sailorskills.com/diving' },
-        { id: 'detailing', label: 'DETAILING', url: 'https://www.sailorskills.com/detailing' },
-        { id: 'deliveries', label: 'DELIVERIES', url: 'https://www.sailorskills.com/deliveries' }
-    ];
+    // Determine if this is a public-facing service or internal service
+    // Public services: Estimator only
+    // Internal services: Admin, Portal, Billing, Inventory, Schedule
+    const isPublicService = currentPage === 'estimator';
+
+    let navItems;
+    if (isPublicService) {
+        // Public navigation for Estimator and Site
+        navItems = [
+            { id: 'home', label: 'HOME', url: 'https://www.sailorskills.com/' },
+            { id: 'training', label: 'TRAINING', url: 'https://www.sailorskills.com/training' },
+            { id: 'diving', label: 'DIVING', url: 'https://www.sailorskills.com/diving' },
+            { id: 'detailing', label: 'DETAILING', url: 'https://www.sailorskills.com/detailing' },
+            { id: 'deliveries', label: 'DELIVERIES', url: 'https://www.sailorskills.com/deliveries' }
+        ];
+    } else {
+        // Internal navigation for Admin, Portal, Billing, Inventory, Schedule
+        navItems = [
+            { id: 'admin', label: 'ADMIN', url: 'https://sailorskills-admin.vercel.app' },
+            { id: 'portal', label: 'PORTAL', url: 'https://sailorskills-portal.vercel.app' },
+            { id: 'billing', label: 'BILLING', url: 'https://sailorskills-billing.vercel.app' },
+            { id: 'inventory', label: 'INVENTORY', url: 'https://sailorskills-inventory.vercel.app' },
+            { id: 'schedule', label: 'SCHEDULE', url: 'https://sailorskills-schedule.vercel.app' },
+            { id: 'estimator', label: 'ESTIMATOR', url: 'https://sailorskills-estimator.vercel.app' }
+        ];
+    }
 
     const navHTML = navItems.map(item => {
         const activeClass = item.id === currentPage ? ' class="active"' : '';
