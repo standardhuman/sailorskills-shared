@@ -5,8 +5,9 @@ import { test, expect } from '@playwright/test';
  * Tests for customer service detection, selection, and condition tracking
  */
 
-const BILLING_URL = 'http://localhost:8001/admin.html';
-const TEST_CUSTOMER_ID = 'cus_test123'; // Update with your test customer ID
+// Use production URL from environment variable or default to latest deployment
+const BILLING_URL = process.env.TEST_URL || 'https://sailorskills-billing-c20mwqydc-brians-projects-bc2d3592.vercel.app/admin.html';
+const TEST_CUSTOMER_ID = 'cus_T0qqGn9xCudHEO'; // John Doe 2 - Test customer with sample services
 
 // Helper function to setup page and wait for load
 async function setupPage(page) {
