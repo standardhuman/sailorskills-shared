@@ -232,6 +232,22 @@ border-radius: 0.5rem;
 
 **Exception:** Public-facing services (like Estimator) do NOT require global navigation integration.
 
+#### 5. Hero Headers (PUBLIC-FACING SERVICES ONLY)
+
+**IMPORTANT:** Hero headers are ONLY for public-facing services like Estimator. Internal services (Admin, Portal, Billing, Inventory, Schedule) MUST NOT include hero headers.
+
+```html
+<!-- ✅ CORRECT - Estimator (public-facing) -->
+<div class="hero-header">
+  <h1>Get Your Diving Estimate</h1>
+</div>
+
+<!-- ❌ WRONG - Internal services should NOT have hero headers -->
+<div id="hero-header-container"></div>  <!-- Remove this from internal services -->
+```
+
+**Rule:** If it has global navigation, it should NOT have a hero header. If it has a hero header, it should NOT have global navigation.
+
 ### Navigation Integration Checklist
 
 Before deploying any **internal** service, ensure:
@@ -656,8 +672,8 @@ localStorage.setItem('inventory_auth_session', JSON.stringify({
 - Uses `/shared/` absolute paths for design tokens and styles
 - **NO navigation integration required** (public-facing)
 - **NO breadcrumbs required** (public-facing)
+- **YES to hero headers** (public-facing service - hero headers are appropriate)
 - Diving service calculator
-- Hero header style
 
 **Integration:**
 ```html
@@ -665,9 +681,15 @@ localStorage.setItem('inventory_auth_session', JSON.stringify({
 <link rel="stylesheet" href="/shared/src/ui/design-tokens.css">
 <link rel="stylesheet" href="/shared/src/ui/styles.css">
 <!-- DO NOT include navigation.js -->
+
+<!-- Hero headers ARE allowed for public-facing services -->
+<div class="hero-header">
+  <h1>Get Your Free Diving Estimate</h1>
+</div>
 ```
 
 **Status:** ✅ Exempt from navigation requirements (public-facing)
+**Status:** ✅ Hero headers allowed and encouraged (public-facing)
 
 ---
 
