@@ -35,7 +35,7 @@ async function loadCustomers() {
     const listContainer = document.getElementById('customer-list');
     listContainer.innerHTML = '<div class="widget-loading">Loading customers...</div>';
 
-    // Get customers with related data
+    // Get customers with related data including full boat details
     let { data: customers, error } = await supabase
       .from('customers')
       .select(`
@@ -46,7 +46,7 @@ async function loadCustomers() {
         created_at,
         payments(amount, status, payment_date),
         service_orders(id, estimated_amount, created_at),
-        boats(id, name)
+        boats(id, name, make, model, length, type, dock, slip, marina)
       `);
 
     // If query fails due to missing tables, try without related data
@@ -74,7 +74,7 @@ async function loadCustomers() {
     allCustomers = (customers || []).map(customer => {
       const payments = customer.payments || [];
       const successfulPayments = payments.filter(p => p.status === 'succeeded');
-      const ltv = successfulPayments.reduce((sum, p) => sum + parseFloat(p.amount || 0), 0);
+      const ltv = successfulPayments.reduce((sum, p => sum + parseFloat(p.amount || 0), 0);
       const orderCount = successfulPayments.length;
       const boatCount = (customer.boats || []).length;
 
@@ -83,12 +83,29 @@ async function loadCustomers() {
         ? new Date(Math.max(...successfulPayments.map(p => new Date(p.payment_date))))
         : new Date(customer.created_at);
 
+      // Extract primary boat information (first boat if multiple)
+      const primaryBoat = (customer.boats || [])[0] || {};
+      const boatMake = primaryBoat.make || '';
+      const boatModel = primaryBoat.model || '';
+      const boatLength = primaryBoat.length || '';
+      const boatType = primaryBoat.type || '';
+      const marina = primaryBoat.marina || '';
+      const dock = primaryBoat.dock || '';
+      const slip = primaryBoat.slip || '';
+
       return {
         ...customer,
         ltv,
         orderCount,
         boatCount,
-        lastActivityDate
+        lastActivityDate,
+        boatMake,
+        boatModel,
+        boatLength,
+        boatType,
+        marina,
+        dock,
+        slip
       };
     });
 
@@ -204,14 +221,14 @@ window.showCustomerDetail = async function(customerId) {
     modal.classList.remove('hidden');
     detailContainer.innerHTML = '<div class="widget-loading">Loading customer details...</div>';
 
-    // Get customer with all related data
+    // Get customer with all related data including full boat details
     const { data: customer, error } = await supabase
       .from('customers')
       .select(`
         *,
         payments(amount, status, payment_date),
         service_orders(id, order_number, service_type, estimated_amount, status, created_at),
-        boats(id, name, make, model, length, type)
+        boats(id, name, make, model, length, type, dock, slip, marina)
       `)
       .eq('id', customerId)
       .single();
@@ -258,8 +275,10 @@ window.showCustomerDetail = async function(customerId) {
               <div class="boat-card">
                 <div class="boat-name">${boat.name || 'Unnamed'}</div>
                 <div class="boat-details">
-                  ${boat.make ? `${boat.make} ` : ''}${boat.model || ''}<br>
-                  ${boat.length ? `Length: ${boat.length}ft` : ''} ${boat.type ? `• Type: ${boat.type}` : ''}
+                  ${boat.make ? `<strong>Make/Model:</strong> ${boat.make} ${boat.model || ''}<br>` : ''}
+                  ${boat.length ? `<strong>Length:</strong> ${boat.length}ft` : ''} ${boat.type ? `• <strong>Type:</strong> ${boat.type}<br>` : ''}
+                  ${boat.marina ? `<strong>Marina:</strong> ${boat.marina}<br>` : ''}
+                  ${boat.dock || boat.slip ? `<strong>Location:</strong> ${[boat.dock ? `Dock ${boat.dock}` : '', boat.slip ? `Slip ${boat.slip}` : ''].filter(Boolean).join(', ')}` : ''}
                 </div>
               </div>
             `).join('')}
@@ -376,17 +395,33 @@ if (document.readyState === 'complete' || document.readyState === 'interactive')
 
 // Data table column configuration
 const DATA_TABLE_COLUMNS = [
+  // Customer Info
   { key: 'name', label: 'Name', visible: true, sortable: true, width: '200px' },
   { key: 'email', label: 'Email', visible: true, sortable: true, width: '250px' },
   { key: 'phone', label: 'Phone', visible: true, sortable: true, width: '150px' },
+
+  // Boat Information
+  { key: 'boatMake', label: 'Boat Make', visible: false, sortable: true, width: '150px' },
+  { key: 'boatModel', label: 'Boat Model', visible: false, sortable: true, width: '150px' },
+  { key: 'boatLength', label: 'Boat Length (ft)', visible: false, sortable: true, width: '120px', type: 'number' },
+  { key: 'boatType', label: 'Boat Type', visible: false, sortable: true, width: '130px' },
+
+  // Location Information
+  { key: 'marina', label: 'Marina', visible: false, sortable: true, width: '180px' },
+  { key: 'dock', label: 'Dock', visible: false, sortable: true, width: '100px' },
+  { key: 'slip', label: 'Slip', visible: false, sortable: true, width: '100px' },
+
+  // Financial Metrics
   { key: 'ltv', label: 'Lifetime Value', visible: true, sortable: true, width: '150px', type: 'currency' },
   { key: 'orderCount', label: 'Total Orders', visible: true, sortable: true, width: '120px', type: 'number' },
   { key: 'boatCount', label: 'Boats', visible: true, sortable: true, width: '100px', type: 'number' },
-  { key: 'avgOrderValue', label: 'Avg Order Value', visible: true, sortable: true, width: '150px', type: 'currency' },
-  { key: 'lastActivityDate', label: 'Last Activity', visible: true, sortable: true, width: '150px', type: 'date' },
-  { key: 'created_at', label: 'Customer Since', visible: true, sortable: true, width: '150px', type: 'date' },
+  { key: 'avgOrderValue', label: 'Avg Order Value', visible: false, sortable: true, width: '150px', type: 'currency' },
   { key: 'totalPaid', label: 'Total Paid', visible: false, sortable: true, width: '150px', type: 'currency' },
-  { key: 'pendingAmount', label: 'Pending Amount', visible: false, sortable: true, width: '150px', type: 'currency' }
+  { key: 'pendingAmount', label: 'Pending Amount', visible: false, sortable: true, width: '150px', type: 'currency' },
+
+  // Dates
+  { key: 'lastActivityDate', label: 'Last Activity', visible: true, sortable: true, width: '150px', type: 'date' },
+  { key: 'created_at', label: 'Customer Since', visible: true, sortable: true, width: '150px', type: 'date' }
 ];
 
 // Data table state
@@ -561,6 +596,7 @@ async function loadDataTable() {
           const pendingAmount = 0; // Not calculated in overview tab
           const avgOrderValue = customer.orderCount > 0 ? totalPaid / customer.orderCount : 0;
 
+          // Boat data is already extracted in allCustomers
           return {
             ...customer,
             totalPaid,
@@ -571,7 +607,7 @@ async function loadDataTable() {
       });
       console.log(`✅ Data table populated from allCustomers: ${dataTableState.data.length} rows`);
     } else {
-      // Load customers for the first time
+      // Load customers for the first time (including full boat details)
       const { data: customers, error } = await supabase
         .from('customers')
         .select(`
@@ -582,7 +618,7 @@ async function loadDataTable() {
           created_at,
           payments(amount, status, payment_date),
           service_orders(id, estimated_amount, created_at),
-          boats(id, name)
+          boats(id, name, make, model, length, type, dock, slip, marina)
         `);
 
       if (error) throw error;
@@ -601,6 +637,16 @@ async function loadDataTable() {
           ? new Date(Math.max(...successfulPayments.map(p => new Date(p.payment_date))))
           : new Date(customer.created_at);
 
+        // Extract primary boat information
+        const primaryBoat = (customer.boats || [])[0] || {};
+        const boatMake = primaryBoat.make || '';
+        const boatModel = primaryBoat.model || '';
+        const boatLength = primaryBoat.length || '';
+        const boatType = primaryBoat.type || '';
+        const marina = primaryBoat.marina || '';
+        const dock = primaryBoat.dock || '';
+        const slip = primaryBoat.slip || '';
+
         return {
           ...customer,
           ltv,
@@ -609,7 +655,14 @@ async function loadDataTable() {
           totalPaid: ltv,
           pendingAmount,
           avgOrderValue,
-          lastActivityDate
+          lastActivityDate,
+          boatMake,
+          boatModel,
+          boatLength,
+          boatType,
+          marina,
+          dock,
+          slip
         };
       });
     }
