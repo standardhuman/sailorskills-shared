@@ -1,6 +1,7 @@
 {
   "name": "@sailorskills/shared",
   "version": "0.1.0",
+  "type": "module",
   "description": "Sailor Skills Shared - Common utilities and components for all products",
   "main": "dist/index.js",
   "module": "dist/index.esm.js",
@@ -9,8 +10,13 @@
     "build": "rollup -c",
     "test": "jest",
     "test:watch": "jest --watch",
+    "test:playwright": "npx playwright test",
+    "test:smart-billing": "npx playwright test tests/smart-billing-flow.spec.js",
     "lint": "eslint src/",
-    "prepublishOnly": "npm run build"
+    "prepublishOnly": "npm run build",
+    "predeploy": "node check-production-ready.js",
+    "verify-db": "node verify-migrations.js",
+    "check-security": "node check-production-ready.js"
   },
   "keywords": [
     "sailorskills",
@@ -22,7 +28,9 @@
   "license": "UNLICENSED",
   "private": true,
   "dependencies": {
-    "@supabase/supabase-js": "^2.0.0"
+    "@supabase/supabase-js": "^2.0.0",
+    "dotenv": "^17.2.3",
+    "stripe": "^19.1.0"
   },
   "devDependencies": {
     "@playwright/test": "^1.55.1",

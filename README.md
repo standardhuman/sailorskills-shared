@@ -7,6 +7,15 @@ Shared utilities, components, and design system for all Sailor Skills products.
 > **Typography**: Montserrat
 > **Style**: Sharp corners, flat design, high contrast
 
+## ⚠️ IMPORTANT: Production Security
+
+**Before deploying to production**, you MUST:
+1. Review and update database RLS (Row Level Security) policies
+2. Run the production readiness check: `node check-production-ready.js`
+3. See `PRODUCTION_DEPLOYMENT_CHECKLIST.md` for complete details
+
+Current development RLS policies are **TOO PERMISSIVE** for production use.
+
 ## Installation
 
 ### Option 1: npm Package (Recommended)
