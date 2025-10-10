@@ -835,6 +835,53 @@
             detailsEl.textContent = details.join(' • ');
 
             card.style.display = 'block';
+
+            // Update payment method display in charge summary
+            updatePaymentMethodInChargeSummary(customer);
+        }
+
+        // Update payment method display in charge summary
+        function updatePaymentMethodInChargeSummary(customer) {
+            const paymentMethodSelect = document.getElementById('paymentMethodSelect');
+            if (!paymentMethodSelect) return;
+
+            // Check if customer has payment methods
+            if (customer && customer.payment_methods && customer.payment_methods.length > 0) {
+                const pm = customer.payment_methods[0];
+                const brand = pm.card.brand.charAt(0).toUpperCase() + pm.card.brand.slice(1);
+                const last4 = pm.card.last4;
+                const expMonth = String(pm.card.exp_month).padStart(2, '0');
+                const expYear = String(pm.card.exp_year).slice(-2);
+
+                // Add saved card as first option
+                const savedOption = document.createElement('option');
+                savedOption.value = 'saved_card';
+                savedOption.textContent = `💳 ${brand} •••• ${last4} (exp ${expMonth}/${expYear})`;
+                savedOption.setAttribute('data-payment-method-id', pm.id);
+
+                // Remove any existing saved card option
+                const existingSaved = paymentMethodSelect.querySelector('option[value="saved_card"]');
+                if (existingSaved) existingSaved.remove();
+
+                // Insert as first option
+                paymentMethodSelect.insertBefore(savedOption, paymentMethodSelect.firstChild);
+                paymentMethodSelect.value = 'saved_card';
+
+                // Store payment method ID globally
+                window.customerPaymentMethodId = pm.id;
+
+                console.log('✅ Payment method available:', `${brand} •••• ${last4}`);
+            } else {
+                // Remove saved card option if it exists
+                const existingSaved = paymentMethodSelect?.querySelector('option[value="saved_card"]');
+                if (existingSaved) existingSaved.remove();
+
+                // Reset to default (stripe)
+                if (paymentMethodSelect) paymentMethodSelect.value = 'stripe';
+                window.customerPaymentMethodId = null;
+
+                console.log('⚠️ No saved payment method');
+            }
         }
 
         // Clear selected customer
@@ -1283,64 +1330,10 @@
             observer.observe(wizardContent, { childList: true, subtree: true });
         }
 
-        // Inject payment section into wizard
+        // Inject payment section into wizard - DISABLED (payment shown in charge summary instead)
         function injectPaymentSection() {
-            const wizardContent = document.getElementById('wizardContent');
-            if (!wizardContent) return;
-
-            // Check if payment section already exists
-            if (document.getElementById('wizardPaymentSection')) return;
-
-            // Check if this is a service that needs payment
-            const serviceKey = window.currentServiceKey;
-            if (!serviceKey) return;
-
-            console.log('Injecting payment section into wizard for service:', serviceKey);
-
-            // Create payment section HTML
-            const paymentSection = document.createElement('div');
-            paymentSection.id = 'wizardPaymentSection';
-            paymentSection.style.cssText = 'margin-top: 30px; padding: 20px; background: #f8f9fa; border-radius: 8px; border: 2px solid #e0e0e0;';
-
-            paymentSection.innerHTML = `
-                <h3 style="margin-bottom: 15px; color: #333;">💳 Payment Information</h3>
-
-                <!-- Existing payment method display -->
-                <div id="wizardPaymentMethodDisplay" style="display: none; margin-bottom: 15px; padding: 15px; background: #e8f5e9; border: 1px solid #4caf50; border-radius: 8px;">
-                    <div style="display: flex; align-items: center; gap: 10px;">
-                        <span style="font-size: 24px;">💳</span>
-                        <div>
-                            <div id="wizardPaymentMethodDetails" style="font-weight: 600; font-size: 15px; color: #2e7d32;"></div>
-                            <div style="font-size: 13px; color: #666; margin-top: 2px;">Saved payment method</div>
-                        </div>
-                        <span style="color: #4caf50; font-size: 20px; margin-left: auto;">✓</span>
-                    </div>
-                </div>
-
-                <!-- New payment method entry -->
-                <div id="wizardNewPaymentMethod" style="display: none;">
-                    <div style="margin-bottom: 10px; padding: 12px; background: #fff3cd; border-radius: 6px; font-size: 14px; color: #856404;">
-                        💡 Enter payment card details to charge customer
-                    </div>
-                    <div id="wizard-card-element" style="padding: 12px; border: 1px solid #ddd; border-radius: 6px; background: white; margin-bottom: 10px;">
-                        <!-- Stripe card element will be mounted here -->
-                    </div>
-                    <div id="wizard-card-errors" role="alert" style="color: #e74c3c; margin-bottom: 10px; min-height: 20px; font-size: 14px;"></div>
-                </div>
-            `;
-
-            // Find the best place to insert it - after the last form section but before the total/charge button
-            const wizardTotalPrice = wizardContent.querySelector('#wizardTotalPrice');
-            if (wizardTotalPrice && wizardTotalPrice.parentElement) {
-                // Insert before the total price section
-                wizardTotalPrice.parentElement.insertBefore(paymentSection, wizardTotalPrice.parentElement.querySelector('div:last-child'));
-            } else {
-                // Just append to the end
-                wizardContent.appendChild(paymentSection);
-            }
-
-            // Initialize payment method display
-            updateWizardPaymentDisplay();
+            // Payment information now shown in Charge Summary at bottom
+            return;
         }
 
         // Update payment display based on selected customer

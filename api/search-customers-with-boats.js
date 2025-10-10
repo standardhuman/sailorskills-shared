@@ -44,9 +44,9 @@ export default async function handler(req, res) {
         const results = [];
         const processedCustomerBoats = new Set(); // Track customer+boat combos to avoid duplicates
 
-        // Step 1: Search Stripe customers by name/email
+        // Step 1: Search Stripe customers by name/email (with payment method expansion)
         const query = `email~'${searchLower}' OR name~'${searchLower}'`;
-        const url = `https://api.stripe.com/v1/customers/search?query=${encodeURIComponent(query)}&limit=20`;
+        const url = `https://api.stripe.com/v1/customers/search?query=${encodeURIComponent(query)}&limit=20&expand[]=data.invoice_settings.default_payment_method`;
 
         const stripeResponse = await fetch(url, {
             method: 'GET',
@@ -81,6 +81,11 @@ export default async function handler(req, res) {
             if (processedCustomerBoats.has(key)) return; // Skip duplicates
             processedCustomerBoats.add(key);
 
+            // Get payment methods from customer object
+            const paymentMethods = customer.invoice_settings?.default_payment_method
+                ? [customer.invoice_settings.default_payment_method]
+                : [];
+
             if (boat) {
                 results.push({
                     id: customer.id,
@@ -98,7 +103,8 @@ export default async function handler(req, res) {
                     marina: boat.marina || '',
                     dock: boat.dock || '',
                     slip: boat.slip || '',
-                    has_supabase_data: true
+                    has_supabase_data: true,
+                    payment_methods: paymentMethods
                 });
             } else {
                 results.push({
@@ -113,7 +119,8 @@ export default async function handler(req, res) {
                     marina: customer.metadata?.marina || '',
                     dock: customer.metadata?.dock || '',
                     slip: customer.metadata?.slip || '',
-                    has_supabase_data: false
+                    has_supabase_data: false,
+                    payment_methods: paymentMethods
                 });
             }
         };
@@ -152,8 +159,8 @@ export default async function handler(req, res) {
 
                 // Find or create Stripe customer for this boat owner
                 if (supabaseCustomer.stripe_customer_id) {
-                    // Get full customer data from Stripe
-                    const stripeCustomerUrl = `https://api.stripe.com/v1/customers/${supabaseCustomer.stripe_customer_id}`;
+                    // Get full customer data from Stripe with payment method
+                    const stripeCustomerUrl = `https://api.stripe.com/v1/customers/${supabaseCustomer.stripe_customer_id}?expand[]=invoice_settings.default_payment_method`;
                     const stripeCustomerResponse = await fetch(stripeCustomerUrl, {
                         method: 'GET',
                         headers: {
