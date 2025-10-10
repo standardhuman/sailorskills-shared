@@ -910,11 +910,25 @@
                         console.log('  ✓ Boat type:', boat.type);
                     }
 
+                    // Set wizard boat type radio button
+                    const wizardBoatTypeInput = document.querySelector(`input[name="wizard_boat_type"][value="${boat.type}"]`);
+                    if (wizardBoatTypeInput) {
+                        wizardBoatTypeInput.checked = true;
+                        console.log('  ✓ Wizard boat type:', boat.type);
+                    }
+
                     // Set hull type radio button
                     const hullTypeInput = document.querySelector(`input[name="hull_type"][value="${boat.hull_type}"]`);
                     if (hullTypeInput) {
                         hullTypeInput.checked = true;
                         console.log('  ✓ Hull type:', boat.hull_type);
+                    }
+
+                    // Set wizard hull type radio button
+                    const wizardHullTypeInput = document.querySelector(`input[name="wizard_hull_type"][value="${boat.hull_type}"]`);
+                    if (wizardHullTypeInput) {
+                        wizardHullTypeInput.checked = true;
+                        console.log('  ✓ Wizard hull type:', boat.hull_type);
                     }
 
                     // Set twin engines checkbox
@@ -924,8 +938,89 @@
                         console.log('  ✓ Twin engines:', boat.has_twin_engines);
                     }
 
+                    // Set wizard twin engines checkbox
+                    const wizardTwinEnginesInput = document.getElementById('wizard_twin_engines');
+                    if (wizardTwinEnginesInput && boat.has_twin_engines !== null) {
+                        wizardTwinEnginesInput.checked = boat.has_twin_engines;
+                        console.log('  ✓ Wizard twin engines:', boat.has_twin_engines);
+                    }
+
+                    // Fill marina information
+                    if (boat.marinas && boat.marinas.name) {
+                        const marinaField = document.getElementById('wizardMarina') || document.getElementById('marina') || document.getElementById('modalMarina');
+                        if (marinaField) {
+                            marinaField.value = boat.marinas.name;
+                            console.log('  ✓ Marina:', boat.marinas.name);
+                        }
+                    }
+
+                    // Fill dock information
+                    if (boat.dock) {
+                        const dockField = document.getElementById('wizardDock') || document.getElementById('dock') || document.getElementById('modalDock');
+                        if (dockField) {
+                            dockField.value = boat.dock;
+                            console.log('  ✓ Dock:', boat.dock);
+                        }
+                    }
+
+                    // Fill slip information
+                    if (boat.slip) {
+                        const slipField = document.getElementById('wizardSlip') || document.getElementById('slip') || document.getElementById('modalSlip');
+                        if (slipField) {
+                            slipField.value = boat.slip;
+                            console.log('  ✓ Slip:', boat.slip);
+                        }
+                    }
+
                 } else {
                     console.log('  ℹ️ No boat data found in Supabase for this customer');
+                }
+
+                // Fill address data if available
+                if (data.addresses && data.addresses.length > 0) {
+                    const address = data.addresses[0]; // Use first address
+                    console.log('  🏠 Found address');
+
+                    // Store address data globally
+                    window.selectedAddress = address;
+
+                    // Fill street address
+                    if (address.street) {
+                        const streetField = document.getElementById('wizardAddress') || document.getElementById('address') || document.getElementById('modalAddress');
+                        if (streetField) {
+                            streetField.value = address.street;
+                            console.log('  ✓ Street address:', address.street);
+                        }
+                    }
+
+                    // Fill city
+                    if (address.city) {
+                        const cityField = document.getElementById('wizardCity') || document.getElementById('city') || document.getElementById('modalCity');
+                        if (cityField) {
+                            cityField.value = address.city;
+                            console.log('  ✓ City:', address.city);
+                        }
+                    }
+
+                    // Fill state
+                    if (address.state) {
+                        const stateField = document.getElementById('wizardState') || document.getElementById('state') || document.getElementById('modalState');
+                        if (stateField) {
+                            stateField.value = address.state;
+                            console.log('  ✓ State:', address.state);
+                        }
+                    }
+
+                    // Fill ZIP code
+                    if (address.zip) {
+                        const zipField = document.getElementById('wizardZip') || document.getElementById('zip') || document.getElementById('modalZip');
+                        if (zipField) {
+                            zipField.value = address.zip;
+                            console.log('  ✓ ZIP:', address.zip);
+                        }
+                    }
+                } else {
+                    console.log('  ℹ️ No address data found in Supabase for this customer');
                 }
             } catch (error) {
                 console.error('  ❌ Error fetching boat data:', error);

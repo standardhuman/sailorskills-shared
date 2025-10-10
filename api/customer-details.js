@@ -72,10 +72,16 @@ export default async function handler(req, res) {
             });
         }
 
-        // Get boats for this customer
+        // Get boats for this customer with marina information
         const { data: boats, error: boatsError } = await supabase
             .from('boats')
-            .select('*')
+            .select(`
+                *,
+                marinas (
+                    id,
+                    name
+                )
+            `)
             .eq('customer_id', customer.id);
 
         if (boatsError) {
