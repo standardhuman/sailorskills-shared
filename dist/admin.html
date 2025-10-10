@@ -246,6 +246,22 @@
                     />
                     <div id="universalSearchResults" class="universal-search-results"></div>
                 </div>
+
+                <!-- Selected Customer Info Card -->
+                <div id="selectedCustomerCard" style="display: none; margin-top: 15px; padding: 15px 20px; background: linear-gradient(135deg, #e8f5e9 0%, #f1f8f4 100%); border: 2px solid #4caf50; border-radius: 10px; box-shadow: 0 2px 8px rgba(76, 175, 80, 0.2);">
+                    <div style="display: flex; align-items: center; justify-content: space-between;">
+                        <div style="display: flex; align-items: center; gap: 15px; flex: 1;">
+                            <div style="font-size: 32px;">✓</div>
+                            <div style="flex: 1;">
+                                <div id="selectedCustomerName" style="font-weight: 600; font-size: 16px; color: #2e7d32; margin-bottom: 4px;"></div>
+                                <div id="selectedCustomerDetails" style="font-size: 14px; color: #666;"></div>
+                            </div>
+                        </div>
+                        <button onclick="clearSelectedCustomer()" style="padding: 8px 16px; background: white; border: 1px solid #4caf50; border-radius: 6px; color: #4caf50; font-weight: 500; cursor: pointer; font-size: 14px; transition: all 0.2s;">
+                            Clear
+                        </button>
+                    </div>
+                </div>
             </div>
 
             <!-- Service Selection -->
@@ -707,13 +723,14 @@
         };
 
         window.proceedWithManualService = function(customer) {
+            // Show customer info card
+            showSelectedCustomerCard(customer);
+
             // Scroll to service selector
             const serviceSelector = document.querySelector('.service-selector');
             if (serviceSelector) {
                 serviceSelector.scrollIntoView({ behavior: 'smooth', block: 'start' });
             }
-
-            alert(`Customer selected: ${customer.name}${customer.boat_name ? ' (' + customer.boat_name + ')' : ''}\n\nNow select a service type below.`);
         };
 
         window.selectExistingService = function(service) {
@@ -768,6 +785,113 @@
                     wizardContainer.scrollIntoView({ behavior: 'smooth', block: 'start' });
                 }
             }, 200);
+        };
+
+        // Show selected customer card
+        function showSelectedCustomerCard(customer) {
+            const card = document.getElementById('selectedCustomerCard');
+            const nameEl = document.getElementById('selectedCustomerName');
+            const detailsEl = document.getElementById('selectedCustomerDetails');
+
+            if (!card || !nameEl || !detailsEl) return;
+
+            // Build details string
+            let details = [];
+            if (customer.email) details.push(`📧 ${customer.email}`);
+            if (customer.boat_name) details.push(`🚤 ${customer.boat_name}${customer.boat_length ? ' (' + customer.boat_length + 'ft)' : ''}`);
+            if (customer.phone) details.push(`📞 ${customer.phone}`);
+
+            nameEl.textContent = customer.name;
+            detailsEl.textContent = details.join(' • ');
+
+            card.style.display = 'block';
+        }
+
+        // Clear selected customer
+        window.clearSelectedCustomer = function() {
+            const card = document.getElementById('selectedCustomerCard');
+            if (card) card.style.display = 'none';
+
+            // Clear stored customer
+            window.selectedCustomer = null;
+            if (window.adminApp) {
+                window.adminApp.selectedCustomer = null;
+            }
+
+            // Hide wizard if shown
+            const wizardContainer = document.getElementById('wizardContainer');
+            if (wizardContainer) {
+                wizardContainer.style.display = 'none';
+                wizardContainer.innerHTML = '';
+            }
+        };
+
+        // Auto-fill wizard fields from selected customer
+        window.autoFillWizardFromSelectedCustomer = function() {
+            const customer = window.selectedCustomer || window.adminApp?.selectedCustomer;
+            if (!customer) {
+                console.log('No selected customer to auto-fill from');
+                return;
+            }
+
+            console.log('Auto-filling wizard from customer:', customer.name);
+
+            // Wait a bit for wizard fields to render
+            setTimeout(() => {
+                // Fill customer info fields
+                const nameField = document.getElementById('wizardCustomerName');
+                if (nameField && customer.name) {
+                    nameField.value = customer.name;
+                    console.log('✓ Filled name:', customer.name);
+                }
+
+                const emailField = document.getElementById('wizardCustomerEmail');
+                if (emailField && customer.email) {
+                    emailField.value = customer.email;
+                    console.log('✓ Filled email:', customer.email);
+                }
+
+                const phoneField = document.getElementById('wizardCustomerPhone');
+                if (phoneField && customer.phone) {
+                    phoneField.value = customer.phone;
+                    console.log('✓ Filled phone:', customer.phone);
+                }
+
+                // Fill boat info fields
+                const boatNameField = document.getElementById('wizardBoatName');
+                if (boatNameField && customer.boat_name) {
+                    boatNameField.value = customer.boat_name;
+                    console.log('✓ Filled boat name:', customer.boat_name);
+                    // Also update hidden field
+                    const boatNameHidden = document.getElementById('boatName');
+                    if (boatNameHidden) boatNameHidden.value = customer.boat_name;
+                }
+
+                const boatLengthField = document.getElementById('wizardBoatLength') || document.getElementById('boat_length');
+                if (boatLengthField && customer.boat_length) {
+                    boatLengthField.value = customer.boat_length;
+                    console.log('✓ Filled boat length:', customer.boat_length);
+                    // Also update hidden field
+                    const boatLengthHidden = document.getElementById('boatLength');
+                    if (boatLengthHidden) boatLengthHidden.value = customer.boat_length;
+                    // Trigger price recalculation
+                    if (window.calculateCost) window.calculateCost();
+                }
+
+                const boatMakeField = document.getElementById('wizardBoatMake') || document.getElementById('boat_make');
+                if (boatMakeField && customer.boat_make) {
+                    boatMakeField.value = customer.boat_make;
+                    console.log('✓ Filled boat make:', customer.boat_make);
+                }
+
+                const boatModelField = document.getElementById('wizardBoatModel') || document.getElementById('boat_model');
+                if (boatModelField && customer.boat_model) {
+                    boatModelField.value = customer.boat_model;
+                    console.log('✓ Filled boat model:', customer.boat_model);
+                }
+
+                console.log('✅ Auto-fill complete');
+            }, 300); // Wait for wizard DOM to be ready
         };
 
         // Initialize when DOM is ready
@@ -1209,9 +1333,12 @@
             if (originalSelectServiceDirect) {
                 originalSelectServiceDirect(serviceKey);
             }
-            // Re-inject payment section after wizard renders
+            // Re-inject payment section and auto-fill after wizard renders
             setTimeout(() => {
                 injectPaymentSection();
+                if (window.autoFillWizardFromSelectedCustomer) {
+                    window.autoFillWizardFromSelectedCustomer();
+                }
             }, 1500);
         };
     </script>
