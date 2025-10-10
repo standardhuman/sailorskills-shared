@@ -945,5 +945,275 @@
     </script>
 
     <!-- Core Admin Functionality -->
+
+    <!-- Wizard Payment Enhancement -->
+    <script>
+        // Enhanced wizard payment functionality
+        // This script monitors wizard creation and injects inline payment handling
+
+        let wizardPaymentStripe = null;
+        let wizardPaymentElements = null;
+        let wizardPaymentCard = null;
+
+        // Watch for wizard content changes and inject payment section
+        function enhanceWizardWithPayment() {
+            const wizardContent = document.getElementById('wizardContent');
+            if (!wizardContent) return;
+
+            // Create a MutationObserver to watch for wizard content changes
+            const observer = new MutationObserver((mutations) => {
+                for (const mutation of mutations) {
+                    if (mutation.type === 'childList' && wizardContent.innerHTML.length > 100) {
+                        // Wizard was just populated - enhance it
+                        setTimeout(() => {
+                            injectPaymentSection();
+                        }, 500);
+                    }
+                }
+            });
+
+            observer.observe(wizardContent, { childList: true, subtree: true });
+        }
+
+        // Inject payment section into wizard
+        function injectPaymentSection() {
+            const wizardContent = document.getElementById('wizardContent');
+            if (!wizardContent) return;
+
+            // Check if payment section already exists
+            if (document.getElementById('wizardPaymentSection')) return;
+
+            // Check if this is a service that needs payment
+            const serviceKey = window.currentServiceKey;
+            if (!serviceKey) return;
+
+            console.log('Injecting payment section into wizard for service:', serviceKey);
+
+            // Create payment section HTML
+            const paymentSection = document.createElement('div');
+            paymentSection.id = 'wizardPaymentSection';
+            paymentSection.style.cssText = 'margin-top: 30px; padding: 20px; background: #f8f9fa; border-radius: 8px; border: 2px solid #e0e0e0;';
+
+            paymentSection.innerHTML = `
+                <h3 style="margin-bottom: 15px; color: #333;">💳 Payment Information</h3>
+
+                <!-- Existing payment method display -->
+                <div id="wizardPaymentMethodDisplay" style="display: none; margin-bottom: 15px; padding: 15px; background: #e8f5e9; border: 1px solid #4caf50; border-radius: 8px;">
+                    <div style="display: flex; align-items: center; gap: 10px;">
+                        <span style="font-size: 24px;">💳</span>
+                        <div>
+                            <div id="wizardPaymentMethodDetails" style="font-weight: 600; font-size: 15px; color: #2e7d32;"></div>
+                            <div style="font-size: 13px; color: #666; margin-top: 2px;">Saved payment method</div>
+                        </div>
+                        <span style="color: #4caf50; font-size: 20px; margin-left: auto;">✓</span>
+                    </div>
+                </div>
+
+                <!-- New payment method entry -->
+                <div id="wizardNewPaymentMethod" style="display: none;">
+                    <div style="margin-bottom: 10px; padding: 12px; background: #fff3cd; border-radius: 6px; font-size: 14px; color: #856404;">
+                        💡 Enter payment card details to charge customer
+                    </div>
+                    <div id="wizard-card-element" style="padding: 12px; border: 1px solid #ddd; border-radius: 6px; background: white; margin-bottom: 10px;">
+                        <!-- Stripe card element will be mounted here -->
+                    </div>
+                    <div id="wizard-card-errors" role="alert" style="color: #e74c3c; margin-bottom: 10px; min-height: 20px; font-size: 14px;"></div>
+                </div>
+            `;
+
+            // Find the best place to insert it - after the last form section but before the total/charge button
+            const wizardTotalPrice = wizardContent.querySelector('#wizardTotalPrice');
+            if (wizardTotalPrice && wizardTotalPrice.parentElement) {
+                // Insert before the total price section
+                wizardTotalPrice.parentElement.insertBefore(paymentSection, wizardTotalPrice.parentElement.querySelector('div:last-child'));
+            } else {
+                // Just append to the end
+                wizardContent.appendChild(paymentSection);
+            }
+
+            // Initialize payment method display
+            updateWizardPaymentDisplay();
+        }
+
+        // Update payment display based on selected customer
+        function updateWizardPaymentDisplay() {
+            const displayDiv = document.getElementById('wizardPaymentMethodDisplay');
+            const newPaymentDiv = document.getElementById('wizardNewPaymentMethod');
+            const detailsSpan = document.getElementById('wizardPaymentMethodDetails');
+
+            if (!displayDiv || !newPaymentDiv) return;
+
+            // Check if customer has saved payment method
+            const customer = window.selectedCustomer || window.adminApp?.selectedCustomer;
+
+            if (customer && customer.payment_methods && customer.payment_methods.length > 0) {
+                // Customer has saved payment method
+                const pm = customer.payment_methods[0];
+                const brand = pm.card.brand.charAt(0).toUpperCase() + pm.card.brand.slice(1);
+                const last4 = pm.card.last4;
+                const expMonth = String(pm.card.exp_month).padStart(2, '0');
+                const expYear = String(pm.card.exp_year).slice(-2);
+
+                detailsSpan.textContent = `${brand} •••• ${last4} (exp ${expMonth}/${expYear})`;
+                displayDiv.style.display = 'block';
+                newPaymentDiv.style.display = 'none';
+
+                // Store payment method ID for use in charge
+                window.wizardSelectedPaymentMethodId = pm.id;
+
+                console.log('✅ Using saved payment method:', pm.id);
+            } else {
+                // No saved payment method - show card entry
+                displayDiv.style.display = 'none';
+                newPaymentDiv.style.display = 'block';
+
+                // Initialize Stripe Elements for card entry
+                initializeWizardStripeElements();
+
+                console.log('💳 No saved payment method - showing card entry');
+            }
+        }
+
+        // Initialize Stripe Elements in wizard
+        function initializeWizardStripeElements() {
+            if (wizardPaymentCard) return; // Already initialized
+
+            const cardElement = document.getElementById('wizard-card-element');
+            if (!cardElement) return;
+
+            const stripeKey = window.ENV?.VITE_STRIPE_PUBLISHABLE_KEY || 'pk_test_s9GdaTKq62yzyAGjg2IHWI67';
+
+            if (!wizardPaymentStripe) {
+                wizardPaymentStripe = Stripe(stripeKey);
+            }
+
+            if (!wizardPaymentElements) {
+                wizardPaymentElements = wizardPaymentStripe.elements();
+            }
+
+            wizardPaymentCard = wizardPaymentElements.create('card', {
+                style: {
+                    base: {
+                        fontSize: '16px',
+                        color: '#32325d',
+                        fontFamily: '"Montserrat", "Helvetica Neue", Helvetica, sans-serif',
+                        '::placeholder': {
+                            color: '#aab7c4'
+                        }
+                    },
+                    invalid: {
+                        color: '#fa755a',
+                        iconColor: '#fa755a'
+                    }
+                }
+            });
+
+            wizardPaymentCard.mount('#wizard-card-element');
+
+            wizardPaymentCard.on('change', (event) => {
+                const errors = document.getElementById('wizard-card-errors');
+                if (errors) {
+                    errors.textContent = event.error ? event.error.message : '';
+                }
+            });
+
+            console.log('✅ Wizard Stripe Elements initialized');
+        }
+
+        // Enhanced charge customer function that uses wizard payment data
+        window.chargeCustomerFromWizard = async function() {
+            console.log('🚀 chargeCustomerFromWizard called');
+
+            const customer = window.selectedCustomer || window.adminApp?.selectedCustomer;
+            if (!customer) {
+                alert('Please select a customer first');
+                return false;
+            }
+
+            const serviceKey = window.currentServiceKey;
+            if (!serviceKey) {
+                alert('Please select a service first');
+                return false;
+            }
+
+            // Get the charge amount
+            const totalCostDisplay = document.getElementById('wizardTotalPrice') || document.getElementById('totalCostDisplay');
+            const amount = totalCostDisplay ? parseFloat(totalCostDisplay.textContent.replace('$', '').replace(',', '')) : 0;
+
+            if (amount <= 0) {
+                alert('Invalid charge amount');
+                return false;
+            }
+
+            console.log(`💰 Charging $${amount.toFixed(2)} to ${customer.name}`);
+
+            // Check if we have a saved payment method or need to create one
+            let paymentMethodId = window.wizardSelectedPaymentMethodId;
+
+            if (!paymentMethodId && wizardPaymentCard) {
+                // Create payment method from card input
+                try {
+                    const { paymentMethod, error } = await wizardPaymentStripe.createPaymentMethod({
+                        type: 'card',
+                        card: wizardPaymentCard,
+                        billing_details: {
+                            name: customer.name,
+                            email: customer.email,
+                            phone: customer.phone
+                        }
+                    });
+
+                    if (error) {
+                        throw new Error(error.message);
+                    }
+
+                    paymentMethodId = paymentMethod.id;
+                    console.log('✅ Created new payment method:', paymentMethodId);
+                } catch (error) {
+                    console.error('❌ Error creating payment method:', error);
+                    const errorDiv = document.getElementById('wizard-card-errors');
+                    if (errorDiv) {
+                        errorDiv.textContent = error.message;
+                    }
+                    return false;
+                }
+            }
+
+            if (!paymentMethodId) {
+                alert('Payment method required');
+                return false;
+            }
+
+            // Use the existing chargeCustomer flow but with wizard payment data
+            if (window.adminApp && window.adminApp.chargeCustomer) {
+                // Set the payment method ID for the charge
+                window.wizardPaymentMethodIdForCharge = paymentMethodId;
+                return await window.adminApp.chargeCustomer();
+            } else {
+                console.error('adminApp.chargeCustomer not available');
+                return false;
+            }
+        };
+
+        // Initialize when DOM is ready
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('🎨 Wizard payment enhancement loaded');
+            setTimeout(() => {
+                enhanceWizardWithPayment();
+            }, 1000);
+        });
+
+        // Also re-run when service is selected
+        const originalSelectServiceDirect = window.selectServiceDirect;
+        window.selectServiceDirect = function(serviceKey) {
+            if (originalSelectServiceDirect) {
+                originalSelectServiceDirect(serviceKey);
+            }
+            // Re-inject payment section after wizard renders
+            setTimeout(() => {
+                injectPaymentSection();
+            }, 1500);
+        };
+    </script>
 </body>
 </html>

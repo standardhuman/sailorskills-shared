@@ -34,9 +34,9 @@ export default async function handler(req, res) {
     try {
         console.log('Searching Stripe customers for:', search);
 
-        // Search customers by email or name
+        // Search customers by email, name, or boat name
         const customers = await stripe.customers.search({
-            query: `email~'${search}' OR name~'${search}'`,
+            query: `email~'${search}' OR name~'${search}' OR metadata['boat_name']~'${search}'`,
             limit: 20
         });
 
