@@ -82,9 +82,17 @@ export default async function handler(req, res) {
             processedCustomerBoats.add(key);
 
             // Get payment methods from customer object
-            const paymentMethods = customer.invoice_settings?.default_payment_method
-                ? [customer.invoice_settings.default_payment_method]
-                : [];
+            // Stripe expands invoice_settings.default_payment_method as an object, not array
+            let paymentMethods = [];
+            const defaultPM = customer.invoice_settings?.default_payment_method;
+            if (defaultPM && typeof defaultPM === 'object' && defaultPM.id) {
+                // Format payment method for frontend
+                paymentMethods = [{
+                    id: defaultPM.id,
+                    type: defaultPM.type,
+                    card: defaultPM.card || {}  // card object contains brand, last4, exp_month, exp_year
+                }];
+            }
 
             if (boat) {
                 results.push({
