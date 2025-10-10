@@ -41,7 +41,8 @@ export default async function handler(req, res) {
 
         // Step 1: Search Stripe customers
         const searchLower = search.toLowerCase();
-        const query = `email~'${searchLower}' OR name~'${searchLower}' OR metadata['boat_name']~'${searchLower}'`;
+        // Note: Stripe only supports ':' (exact match) for metadata, not '~' (partial match)
+        const query = `email~'${searchLower}' OR name~'${searchLower}'`;
         const url = `https://api.stripe.com/v1/customers/search?query=${encodeURIComponent(query)}&limit=20`;
 
         const stripeResponse = await fetch(url, {
