@@ -42,6 +42,7 @@ export default async function handler(req, res) {
             method: 'GET',
             headers: {
                 'Authorization': `Bearer ${process.env.STRIPE_SECRET_KEY}`,
+                'Stripe-Version': '2024-06-20', // Use a modern API version that supports search
                 'Content-Type': 'application/x-www-form-urlencoded'
             }
         });
