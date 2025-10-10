@@ -563,7 +563,7 @@
                             ? 'http://localhost:3001/api'
                             : '/api';
 
-                        const response = await fetch(`${API_BASE_URL}/stripe-customers?search=${encodeURIComponent(query)}`);
+                        const response = await fetch(`${API_BASE_URL}/search-customers-with-boats?search=${encodeURIComponent(query)}`);
                         const customers = await response.json();
 
                         if (customers && customers.length > 0) {
@@ -601,14 +601,24 @@
 
         function displayUniversalSearchResults(customers, resultsDiv) {
             const html = customers.map(customer => {
-                const boatName = customer.boat_name || 'No boat';
+                const boatName = customer.boat_name || '';
+                const boatLength = customer.boat_length || '';
                 const email = customer.email || '';
+
+                // Build boat display string
+                let boatDisplay = '';
+                if (boatName && boatLength) {
+                    boatDisplay = `${boatName} (${boatLength}ft)`;
+                } else if (boatName) {
+                    boatDisplay = boatName;
+                } else if (boatLength) {
+                    boatDisplay = `${boatLength}ft`;
+                }
 
                 return `
                     <div class="search-result-item" onclick="window.selectUniversalSearchCustomer(${JSON.stringify(customer).replace(/"/g, '&quot;')})">
-                        <div class="customer-name">${customer.name}</div>
+                        <div class="customer-name">${customer.name}${boatDisplay ? ' → ' + boatDisplay : ''}</div>
                         <div class="customer-details">
-                            ${boatName !== 'No boat' ? `<span class="boat-badge">🚤 ${boatName}</span>` : ''}
                             <span class="email-badge">📧 ${email}</span>
                         </div>
                     </div>
@@ -620,7 +630,7 @@
         }
 
         window.selectUniversalSearchCustomer = async function(customer) {
-            console.log('Selected customer:', customer);
+            console.log('Selected customer with boat:', customer);
 
             // Hide search results
             document.getElementById('universalSearchResults').style.display = 'none';
@@ -632,6 +642,26 @@
             if (window.adminApp) {
                 window.adminApp.selectedCustomer = customer;
                 window.selectedCustomer = customer;
+            }
+
+            // If customer has boat data from search, pre-select it
+            if (customer.boat_id) {
+                window.selectedBoat = {
+                    id: customer.boat_id,
+                    name: customer.boat_name,
+                    length: customer.boat_length,
+                    make: customer.boat_make,
+                    model: customer.boat_model,
+                    type: customer.boat_type,
+                    hull_type: customer.hull_type,
+                    has_twin_engines: customer.has_twin_engines,
+                    marina: customer.marina,
+                    dock: customer.dock,
+                    slip: customer.slip
+                };
+                console.log('✅ Pre-selected boat from search:', window.selectedBoat);
+            } else {
+                window.selectedBoat = null;
             }
 
             // Fetch customer services
@@ -849,13 +879,13 @@
                 console.log('  ✓ Email:', customer.email);
             }
 
-            // Fetch boat data from Supabase
+            // Fetch boat data from Supabase (unless already pre-selected from search)
             try {
                 const API_BASE_URL = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
                     ? 'http://localhost:3001/api'
                     : '/api';
 
-                console.log('  🔍 Fetching boat data from Supabase...');
+                console.log('  🔍 Fetching customer details from Supabase...');
                 const response = await fetch(`${API_BASE_URL}/customer-details?stripeCustomerId=${customer.id}&email=${encodeURIComponent(customer.email)}`);
                 const data = await response.json();
 
@@ -870,12 +900,18 @@
                     console.log('  ✓ Phone (from Supabase):', data.customer.phone);
                 }
 
-                if (data.found && data.boats && data.boats.length > 0) {
-                    const boat = data.boats[0]; // Use first boat
-                    console.log('  🚤 Found boat:', boat.name);
+                // Use pre-selected boat from search if available, otherwise get from API
+                let boat = window.selectedBoat;
 
-                    // Store boat data globally
+                if (!boat && data.found && data.boats && data.boats.length > 0) {
+                    boat = data.boats[0]; // Use first boat if no pre-selection
+                    console.log('  🚤 Found boat from API:', boat.name);
                     window.selectedBoat = boat;
+                } else if (boat) {
+                    console.log('  🚤 Using pre-selected boat:', boat.name);
+                }
+
+                if (boat) {
 
                     // Fill boat fields
                     const boatNameField = document.getElementById('wizardBoatName');
@@ -886,16 +922,22 @@
                         if (boatNameHidden) boatNameHidden.value = boat.name;
                     }
 
+                    // Boat length
                     const boatLengthField = document.getElementById('wizardBoatLength') || document.getElementById('boat_length');
-                    if (boatLengthField && boat.length) {
-                        boatLengthField.value = boat.length;
-                        console.log('  ✓ Boat length:', boat.length);
-                        const boatLengthHidden = document.getElementById('boatLength');
-                        if (boatLengthHidden) boatLengthHidden.value = boat.length;
-                        // Trigger price recalculation
-                        if (window.calculateCost) window.calculateCost();
-                    } else {
-                        console.log('  ⚠️ Boat length not found. boat.length =', boat.length, 'field =', boatLengthField);
+                    if (boatLengthField) {
+                        // Change placeholder to avoid confusion
+                        boatLengthField.placeholder = 'Length (ft)';
+
+                        if (boat.length) {
+                            boatLengthField.value = boat.length;
+                            console.log('  ✓ Boat length:', boat.length);
+                            const boatLengthHidden = document.getElementById('boatLength');
+                            if (boatLengthHidden) boatLengthHidden.value = boat.length;
+                            // Trigger price recalculation
+                            if (window.calculateCost) window.calculateCost();
+                        } else {
+                            console.log('  ⚠️ Boat length not found. boat.length =', boat.length);
+                        }
                     }
 
                     const boatMakeField = document.getElementById('wizardBoatMake') || document.getElementById('boat_make');
