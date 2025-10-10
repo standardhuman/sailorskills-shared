@@ -830,68 +830,65 @@
         window.autoFillWizardFromSelectedCustomer = function() {
             const customer = window.selectedCustomer || window.adminApp?.selectedCustomer;
             if (!customer) {
-                console.log('No selected customer to auto-fill from');
+                console.log('⚠️ No selected customer to auto-fill from');
                 return;
             }
 
-            console.log('Auto-filling wizard from customer:', customer.name);
+            console.log('🔄 Auto-filling wizard from customer:', customer.name);
 
-            // Wait a bit for wizard fields to render
-            setTimeout(() => {
-                // Fill customer info fields
-                const nameField = document.getElementById('wizardCustomerName');
-                if (nameField && customer.name) {
-                    nameField.value = customer.name;
-                    console.log('✓ Filled name:', customer.name);
-                }
+            // Fill customer info fields
+            const nameField = document.getElementById('wizardCustomerName');
+            if (nameField && customer.name) {
+                nameField.value = customer.name;
+                console.log('  ✓ Name:', customer.name);
+            }
 
-                const emailField = document.getElementById('wizardCustomerEmail');
-                if (emailField && customer.email) {
-                    emailField.value = customer.email;
-                    console.log('✓ Filled email:', customer.email);
-                }
+            const emailField = document.getElementById('wizardCustomerEmail');
+            if (emailField && customer.email) {
+                emailField.value = customer.email;
+                console.log('  ✓ Email:', customer.email);
+            }
 
-                const phoneField = document.getElementById('wizardCustomerPhone');
-                if (phoneField && customer.phone) {
-                    phoneField.value = customer.phone;
-                    console.log('✓ Filled phone:', customer.phone);
-                }
+            const phoneField = document.getElementById('wizardCustomerPhone');
+            if (phoneField && customer.phone) {
+                phoneField.value = customer.phone;
+                console.log('  ✓ Phone:', customer.phone);
+            }
 
-                // Fill boat info fields
-                const boatNameField = document.getElementById('wizardBoatName');
-                if (boatNameField && customer.boat_name) {
-                    boatNameField.value = customer.boat_name;
-                    console.log('✓ Filled boat name:', customer.boat_name);
-                    // Also update hidden field
-                    const boatNameHidden = document.getElementById('boatName');
-                    if (boatNameHidden) boatNameHidden.value = customer.boat_name;
-                }
+            // Fill boat info fields
+            const boatNameField = document.getElementById('wizardBoatName');
+            if (boatNameField && customer.boat_name) {
+                boatNameField.value = customer.boat_name;
+                console.log('  ✓ Boat name:', customer.boat_name);
+                // Also update hidden field
+                const boatNameHidden = document.getElementById('boatName');
+                if (boatNameHidden) boatNameHidden.value = customer.boat_name;
+            }
 
-                const boatLengthField = document.getElementById('wizardBoatLength') || document.getElementById('boat_length');
-                if (boatLengthField && customer.boat_length) {
-                    boatLengthField.value = customer.boat_length;
-                    console.log('✓ Filled boat length:', customer.boat_length);
-                    // Also update hidden field
-                    const boatLengthHidden = document.getElementById('boatLength');
-                    if (boatLengthHidden) boatLengthHidden.value = customer.boat_length;
-                    // Trigger price recalculation
-                    if (window.calculateCost) window.calculateCost();
-                }
+            const boatLengthField = document.getElementById('wizardBoatLength') || document.getElementById('boat_length');
+            if (boatLengthField && customer.boat_length) {
+                boatLengthField.value = customer.boat_length;
+                console.log('  ✓ Boat length:', customer.boat_length);
+                // Also update hidden field
+                const boatLengthHidden = document.getElementById('boatLength');
+                if (boatLengthHidden) boatLengthHidden.value = customer.boat_length;
+                // Trigger price recalculation
+                if (window.calculateCost) window.calculateCost();
+            }
 
-                const boatMakeField = document.getElementById('wizardBoatMake') || document.getElementById('boat_make');
-                if (boatMakeField && customer.boat_make) {
-                    boatMakeField.value = customer.boat_make;
-                    console.log('✓ Filled boat make:', customer.boat_make);
-                }
+            const boatMakeField = document.getElementById('wizardBoatMake') || document.getElementById('boat_make');
+            if (boatMakeField && customer.boat_make) {
+                boatMakeField.value = customer.boat_make;
+                console.log('  ✓ Boat make:', customer.boat_make);
+            }
 
-                const boatModelField = document.getElementById('wizardBoatModel') || document.getElementById('boat_model');
-                if (boatModelField && customer.boat_model) {
-                    boatModelField.value = customer.boat_model;
-                    console.log('✓ Filled boat model:', customer.boat_model);
-                }
+            const boatModelField = document.getElementById('wizardBoatModel') || document.getElementById('boat_model');
+            if (boatModelField && customer.boat_model) {
+                boatModelField.value = customer.boat_model;
+                console.log('  ✓ Boat model:', customer.boat_model);
+            }
 
-                console.log('✅ Auto-fill complete');
-            }, 300); // Wait for wizard DOM to be ready
+            console.log('✅ Auto-fill complete');
         };
 
         // Initialize when DOM is ready
@@ -1333,13 +1330,37 @@
             if (originalSelectServiceDirect) {
                 originalSelectServiceDirect(serviceKey);
             }
-            // Re-inject payment section and auto-fill after wizard renders
-            setTimeout(() => {
-                injectPaymentSection();
-                if (window.autoFillWizardFromSelectedCustomer) {
-                    window.autoFillWizardFromSelectedCustomer();
-                }
-            }, 1500);
+
+            // Wait for wizard fields to exist, then inject payment and auto-fill
+            const waitForWizardFields = () => {
+                let attempts = 0;
+                const maxAttempts = 50; // 5 seconds max (50 * 100ms)
+
+                const checkInterval = setInterval(() => {
+                    attempts++;
+
+                    // Check if wizard customer name field exists (primary indicator)
+                    const nameField = document.getElementById('wizardCustomerName');
+
+                    if (nameField) {
+                        clearInterval(checkInterval);
+                        console.log(`✅ Wizard fields ready after ${attempts * 100}ms`);
+
+                        // Inject payment section
+                        injectPaymentSection();
+
+                        // Auto-fill customer data
+                        if (window.autoFillWizardFromSelectedCustomer) {
+                            window.autoFillWizardFromSelectedCustomer();
+                        }
+                    } else if (attempts >= maxAttempts) {
+                        clearInterval(checkInterval);
+                        console.warn('⚠️ Wizard fields not found after 5 seconds');
+                    }
+                }, 100); // Check every 100ms
+            };
+
+            waitForWizardFields();
         };
     </script>
 </body>
