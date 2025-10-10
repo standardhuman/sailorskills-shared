@@ -826,8 +826,8 @@
             }
         };
 
-        // Auto-fill wizard fields from selected customer
-        window.autoFillWizardFromSelectedCustomer = function() {
+        // Auto-fill wizard fields from selected customer (async to fetch from Supabase)
+        window.autoFillWizardFromSelectedCustomer = async function() {
             const customer = window.selectedCustomer || window.adminApp?.selectedCustomer;
             if (!customer) {
                 console.log('⚠️ No selected customer to auto-fill from');
@@ -836,7 +836,7 @@
 
             console.log('🔄 Auto-filling wizard from customer:', customer.name);
 
-            // Fill customer info fields
+            // Fill customer info fields from Stripe
             const nameField = document.getElementById('wizardCustomerName');
             if (nameField && customer.name) {
                 nameField.value = customer.name;
@@ -855,37 +855,80 @@
                 console.log('  ✓ Phone:', customer.phone);
             }
 
-            // Fill boat info fields
-            const boatNameField = document.getElementById('wizardBoatName');
-            if (boatNameField && customer.boat_name) {
-                boatNameField.value = customer.boat_name;
-                console.log('  ✓ Boat name:', customer.boat_name);
-                // Also update hidden field
-                const boatNameHidden = document.getElementById('boatName');
-                if (boatNameHidden) boatNameHidden.value = customer.boat_name;
-            }
+            // Fetch boat data from Supabase
+            try {
+                const API_BASE_URL = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
+                    ? 'http://localhost:3001/api'
+                    : '/api';
 
-            const boatLengthField = document.getElementById('wizardBoatLength') || document.getElementById('boat_length');
-            if (boatLengthField && customer.boat_length) {
-                boatLengthField.value = customer.boat_length;
-                console.log('  ✓ Boat length:', customer.boat_length);
-                // Also update hidden field
-                const boatLengthHidden = document.getElementById('boatLength');
-                if (boatLengthHidden) boatLengthHidden.value = customer.boat_length;
-                // Trigger price recalculation
-                if (window.calculateCost) window.calculateCost();
-            }
+                console.log('  🔍 Fetching boat data from Supabase...');
+                const response = await fetch(`${API_BASE_URL}/customer-details?stripeCustomerId=${customer.id}`);
+                const data = await response.json();
 
-            const boatMakeField = document.getElementById('wizardBoatMake') || document.getElementById('boat_make');
-            if (boatMakeField && customer.boat_make) {
-                boatMakeField.value = customer.boat_make;
-                console.log('  ✓ Boat make:', customer.boat_make);
-            }
+                if (data.found && data.boats && data.boats.length > 0) {
+                    const boat = data.boats[0]; // Use first boat
+                    console.log('  🚤 Found boat:', boat.name);
 
-            const boatModelField = document.getElementById('wizardBoatModel') || document.getElementById('boat_model');
-            if (boatModelField && customer.boat_model) {
-                boatModelField.value = customer.boat_model;
-                console.log('  ✓ Boat model:', customer.boat_model);
+                    // Store boat data globally
+                    window.selectedBoat = boat;
+
+                    // Fill boat fields
+                    const boatNameField = document.getElementById('wizardBoatName');
+                    if (boatNameField && boat.name) {
+                        boatNameField.value = boat.name;
+                        console.log('  ✓ Boat name:', boat.name);
+                        const boatNameHidden = document.getElementById('boatName');
+                        if (boatNameHidden) boatNameHidden.value = boat.name;
+                    }
+
+                    const boatLengthField = document.getElementById('wizardBoatLength') || document.getElementById('boat_length');
+                    if (boatLengthField && boat.length) {
+                        boatLengthField.value = boat.length;
+                        console.log('  ✓ Boat length:', boat.length);
+                        const boatLengthHidden = document.getElementById('boatLength');
+                        if (boatLengthHidden) boatLengthHidden.value = boat.length;
+                        // Trigger price recalculation
+                        if (window.calculateCost) window.calculateCost();
+                    }
+
+                    const boatMakeField = document.getElementById('wizardBoatMake') || document.getElementById('boat_make');
+                    if (boatMakeField && boat.make) {
+                        boatMakeField.value = boat.make;
+                        console.log('  ✓ Boat make:', boat.make);
+                    }
+
+                    const boatModelField = document.getElementById('wizardBoatModel') || document.getElementById('boat_model');
+                    if (boatModelField && boat.model) {
+                        boatModelField.value = boat.model;
+                        console.log('  ✓ Boat model:', boat.model);
+                    }
+
+                    // Set boat type radio button
+                    const boatTypeInput = document.querySelector(`input[name="boat_type"][value="${boat.type}"]`);
+                    if (boatTypeInput) {
+                        boatTypeInput.checked = true;
+                        console.log('  ✓ Boat type:', boat.type);
+                    }
+
+                    // Set hull type radio button
+                    const hullTypeInput = document.querySelector(`input[name="hull_type"][value="${boat.hull_type}"]`);
+                    if (hullTypeInput) {
+                        hullTypeInput.checked = true;
+                        console.log('  ✓ Hull type:', boat.hull_type);
+                    }
+
+                    // Set twin engines checkbox
+                    const twinEnginesInput = document.getElementById('has_twin_engines');
+                    if (twinEnginesInput && boat.has_twin_engines !== null) {
+                        twinEnginesInput.value = boat.has_twin_engines ? 'true' : 'false';
+                        console.log('  ✓ Twin engines:', boat.has_twin_engines);
+                    }
+
+                } else {
+                    console.log('  ℹ️ No boat data found in Supabase for this customer');
+                }
+            } catch (error) {
+                console.error('  ❌ Error fetching boat data:', error);
             }
 
             console.log('✅ Auto-fill complete');
