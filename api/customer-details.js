@@ -25,33 +25,51 @@ export default async function handler(req, res) {
         return res.status(405).json({ error: 'Method not allowed' });
     }
 
-    const { stripeCustomerId } = req.query;
+    const { stripeCustomerId, email } = req.query;
 
-    if (!stripeCustomerId) {
-        return res.status(400).json({ error: 'stripeCustomerId is required' });
+    if (!stripeCustomerId && !email) {
+        return res.status(400).json({ error: 'stripeCustomerId or email is required' });
     }
 
     try {
         const supabase = createClient(supabaseUrl, supabaseKey);
 
-        // Get customer from Supabase by Stripe customer ID
-        const { data: customer, error: customerError } = await supabase
-            .from('customers')
-            .select('*')
-            .eq('stripe_customer_id', stripeCustomerId)
-            .single();
+        let customer = null;
 
-        if (customerError) {
-            // Customer not found in Supabase - that's okay, return empty data
-            if (customerError.code === 'PGRST116') {
-                return res.status(200).json({
-                    found: false,
-                    customer: null,
-                    boats: [],
-                    addresses: []
-                });
+        // Try to get customer by Stripe customer ID first
+        if (stripeCustomerId) {
+            const { data, error } = await supabase
+                .from('customers')
+                .select('*')
+                .eq('stripe_customer_id', stripeCustomerId)
+                .maybeSingle();
+
+            if (!error && data) {
+                customer = data;
             }
-            throw customerError;
+        }
+
+        // If not found and email provided, try to find by email
+        if (!customer && email) {
+            const { data, error } = await supabase
+                .from('customers')
+                .select('*')
+                .eq('email', email)
+                .maybeSingle();
+
+            if (!error && data) {
+                customer = data;
+            }
+        }
+
+        if (!customer) {
+            // Customer not found - return empty data
+            return res.status(200).json({
+                found: false,
+                customer: null,
+                boats: [],
+                addresses: []
+            });
         }
 
         // Get boats for this customer

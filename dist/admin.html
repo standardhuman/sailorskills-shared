@@ -862,7 +862,7 @@
                     : '/api';
 
                 console.log('  🔍 Fetching boat data from Supabase...');
-                const response = await fetch(`${API_BASE_URL}/customer-details?stripeCustomerId=${customer.id}`);
+                const response = await fetch(`${API_BASE_URL}/customer-details?stripeCustomerId=${customer.id}&email=${encodeURIComponent(customer.email)}`);
                 const data = await response.json();
 
                 if (data.found && data.boats && data.boats.length > 0) {
