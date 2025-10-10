@@ -853,6 +853,10 @@
             if (phoneField && customer.phone) {
                 phoneField.value = customer.phone;
                 console.log('  ✓ Phone:', customer.phone);
+            } else if (phoneField && data.customer && data.customer.phone) {
+                // Fall back to Supabase phone if Stripe doesn't have one
+                phoneField.value = data.customer.phone;
+                console.log('  ✓ Phone (from Supabase):', data.customer.phone);
             }
 
             // Fetch boat data from Supabase
