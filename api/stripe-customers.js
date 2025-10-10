@@ -35,7 +35,9 @@ export default async function handler(req, res) {
         console.log('Searching Stripe customers for:', search);
 
         // Search customers using direct API call
-        const query = `email~'${search}' OR name~'${search}' OR metadata['boat_name']:'${search}'`;
+        // Use lowercase for case-insensitive search
+        const searchLower = search.toLowerCase();
+        const query = `email~'${searchLower}' OR name~'${searchLower}' OR metadata['boat_name']~'${searchLower}'`;
         const url = `https://api.stripe.com/v1/customers/search?query=${encodeURIComponent(query)}&limit=20`;
 
         const response = await fetch(url, {
