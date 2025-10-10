@@ -849,16 +849,6 @@
                 console.log('  ✓ Email:', customer.email);
             }
 
-            const phoneField = document.getElementById('wizardCustomerPhone');
-            if (phoneField && customer.phone) {
-                phoneField.value = customer.phone;
-                console.log('  ✓ Phone:', customer.phone);
-            } else if (phoneField && data.customer && data.customer.phone) {
-                // Fall back to Supabase phone if Stripe doesn't have one
-                phoneField.value = data.customer.phone;
-                console.log('  ✓ Phone (from Supabase):', data.customer.phone);
-            }
-
             // Fetch boat data from Supabase
             try {
                 const API_BASE_URL = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
@@ -868,6 +858,17 @@
                 console.log('  🔍 Fetching boat data from Supabase...');
                 const response = await fetch(`${API_BASE_URL}/customer-details?stripeCustomerId=${customer.id}&email=${encodeURIComponent(customer.email)}`);
                 const data = await response.json();
+
+                // Fill phone number (Stripe first, then Supabase fallback)
+                const phoneField = document.getElementById('wizardCustomerPhone');
+                if (phoneField && customer.phone) {
+                    phoneField.value = customer.phone;
+                    console.log('  ✓ Phone (from Stripe):', customer.phone);
+                } else if (phoneField && data.customer && data.customer.phone) {
+                    // Fall back to Supabase phone if Stripe doesn't have one
+                    phoneField.value = data.customer.phone;
+                    console.log('  ✓ Phone (from Supabase):', data.customer.phone);
+                }
 
                 if (data.found && data.boats && data.boats.length > 0) {
                     const boat = data.boats[0]; // Use first boat
@@ -893,6 +894,8 @@
                         if (boatLengthHidden) boatLengthHidden.value = boat.length;
                         // Trigger price recalculation
                         if (window.calculateCost) window.calculateCost();
+                    } else {
+                        console.log('  ⚠️ Boat length not found. boat.length =', boat.length, 'field =', boatLengthField);
                     }
 
                     const boatMakeField = document.getElementById('wizardBoatMake') || document.getElementById('boat_make');
