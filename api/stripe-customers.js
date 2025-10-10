@@ -3,16 +3,12 @@
  * GET /api/stripe-customers?search=query
  *
  * Searches Stripe customers by name, email, or metadata (boat name)
- * Used by universal search box on admin.html
+ * Uses direct HTTP fetch instead of Stripe SDK (due to Vercel compatibility)
  */
 
 export const config = {
     runtime: 'nodejs'
 };
-
-import Stripe from 'stripe';
-
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
 
 export default async function handler(req, res) {
     // CORS headers
@@ -38,17 +34,29 @@ export default async function handler(req, res) {
     try {
         console.log('Searching Stripe customers for:', search);
 
-        // Search customers by email, name, or boat name
-        // Note: metadata fields use ':' operator (exact match), not '~' (fuzzy search)
-        const customers = await stripe.customers.search({
-            query: `email~'${search}' OR name~'${search}' OR metadata['boat_name']:'${search}'`,
-            limit: 20
+        // Search customers using direct API call
+        const query = `email~'${search}' OR name~'${search}' OR metadata['boat_name']:'${search}'`;
+        const url = `https://api.stripe.com/v1/customers/search?query=${encodeURIComponent(query)}&limit=20`;
+
+        const response = await fetch(url, {
+            method: 'GET',
+            headers: {
+                'Authorization': `Bearer ${process.env.STRIPE_SECRET_KEY}`,
+                'Stripe-Version': '2024-06-20', // Use a modern API version that supports search
+                'Content-Type': 'application/x-www-form-urlencoded'
+            }
         });
 
-        console.log(`Found ${customers.data.length} customers`);
+        if (!response.ok) {
+            const errorData = await response.json();
+            throw new Error(errorData.error?.message || 'Stripe API error');
+        }
+
+        const data = await response.json();
+        console.log(`Found ${data.data.length} customers`);
 
         // Format customer data for frontend
-        const formattedCustomers = customers.data.map(customer => ({
+        const formattedCustomers = data.data.map(customer => ({
             id: customer.id,
             name: customer.name || customer.email || 'Unknown',
             email: customer.email || '',
@@ -67,14 +75,6 @@ export default async function handler(req, res) {
 
     } catch (error) {
         console.error('Error searching Stripe customers:', error);
-
-        // Handle Stripe API errors gracefully
-        if (error.type === 'StripeInvalidRequestError') {
-            return res.status(400).json({
-                error: 'Invalid search query',
-                details: error.message
-            });
-        }
 
         return res.status(500).json({
             error: 'Failed to search customers',
