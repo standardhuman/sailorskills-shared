@@ -30,7 +30,7 @@
   "dependencies": {
     "@supabase/supabase-js": "^2.0.0",
     "dotenv": "^17.2.3",
-    "stripe": "^19.1.0"
+    "stripe": "^14.25.0"
   },
   "devDependencies": {
     "@playwright/test": "^1.55.1",
