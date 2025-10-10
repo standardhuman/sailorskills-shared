@@ -1324,44 +1324,56 @@
             }, 1000);
         });
 
-        // Also re-run when service is selected
-        const originalSelectServiceDirect = window.selectServiceDirect;
-        window.selectServiceDirect = function(serviceKey) {
-            if (originalSelectServiceDirect) {
-                originalSelectServiceDirect(serviceKey);
-            }
+        // Wait for ALL scripts (including modules) to load before wrapping
+        window.addEventListener('load', function() {
+            console.log('🔧 Wrapping selectServiceDirect after page load...');
 
-            // Wait for wizard fields to exist, then inject payment and auto-fill
-            const waitForWizardFields = () => {
-                let attempts = 0;
-                const maxAttempts = 50; // 5 seconds max (50 * 100ms)
+            // Store the current (module-loaded) version
+            const originalSelectServiceDirect = window.selectServiceDirect;
 
-                const checkInterval = setInterval(() => {
-                    attempts++;
+            // Replace with our wrapper
+            window.selectServiceDirect = function(serviceKey) {
+                console.log('🚀 Wrapped selectServiceDirect called with:', serviceKey);
 
-                    // Check if wizard customer name field exists (primary indicator)
-                    const nameField = document.getElementById('wizardCustomerName');
+                // Call the original function
+                if (originalSelectServiceDirect) {
+                    originalSelectServiceDirect(serviceKey);
+                }
 
-                    if (nameField) {
-                        clearInterval(checkInterval);
-                        console.log(`✅ Wizard fields ready after ${attempts * 100}ms`);
+                // Wait for wizard fields to exist, then inject payment and auto-fill
+                const waitForWizardFields = () => {
+                    let attempts = 0;
+                    const maxAttempts = 50; // 5 seconds max (50 * 100ms)
 
-                        // Inject payment section
-                        injectPaymentSection();
+                    const checkInterval = setInterval(() => {
+                        attempts++;
 
-                        // Auto-fill customer data
-                        if (window.autoFillWizardFromSelectedCustomer) {
-                            window.autoFillWizardFromSelectedCustomer();
+                        // Check if wizard customer name field exists (primary indicator)
+                        const nameField = document.getElementById('wizardCustomerName');
+
+                        if (nameField) {
+                            clearInterval(checkInterval);
+                            console.log(`✅ Wizard fields ready after ${attempts * 100}ms`);
+
+                            // Inject payment section
+                            injectPaymentSection();
+
+                            // Auto-fill customer data
+                            if (window.autoFillWizardFromSelectedCustomer) {
+                                window.autoFillWizardFromSelectedCustomer();
+                            }
+                        } else if (attempts >= maxAttempts) {
+                            clearInterval(checkInterval);
+                            console.warn('⚠️ Wizard fields not found after 5 seconds');
                         }
-                    } else if (attempts >= maxAttempts) {
-                        clearInterval(checkInterval);
-                        console.warn('⚠️ Wizard fields not found after 5 seconds');
-                    }
-                }, 100); // Check every 100ms
+                    }, 100); // Check every 100ms
+                };
+
+                waitForWizardFields();
             };
 
-            waitForWizardFields();
-        };
+            console.log('✅ selectServiceDirect wrapper installed');
+        });
     </script>
 </body>
 </html>
