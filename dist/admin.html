@@ -950,11 +950,11 @@
                     }
 
                     // Fill marina information
-                    if (boat.marinas && boat.marinas.name) {
+                    if (boat.marina) {
                         const marinaField = document.getElementById('wizardMarina') || document.getElementById('marina') || document.getElementById('modalMarina');
                         if (marinaField) {
-                            marinaField.value = boat.marinas.name;
-                            console.log('  ✓ Marina:', boat.marinas.name);
+                            marinaField.value = boat.marina;
+                            console.log('  ✓ Marina:', boat.marina);
                         }
                     }
 

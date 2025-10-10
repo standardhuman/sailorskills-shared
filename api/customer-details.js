@@ -72,16 +72,11 @@ export default async function handler(req, res) {
             });
         }
 
-        // Get boats for this customer with marina information
+        // Get boats for this customer
+        // Note: marina is a text column in boats table, not a foreign key
         const { data: boats, error: boatsError } = await supabase
             .from('boats')
-            .select(`
-                *,
-                marinas (
-                    id,
-                    name
-                )
-            `)
+            .select('*')
             .eq('customer_id', customer.id);
 
         if (boatsError) {
