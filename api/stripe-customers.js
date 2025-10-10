@@ -6,6 +6,10 @@
  * Used by universal search box on admin.html
  */
 
+export const config = {
+    runtime: 'nodejs'
+};
+
 import Stripe from 'stripe';
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
