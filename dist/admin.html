@@ -429,13 +429,13 @@
         console.log('Supabase initialized:', window.supabase);
 
         // Define environment variables globally for module scripts
-        // Using TEST mode Stripe keys (both frontend and backend must match)
-        // Frontend: pk_test_s9GdaTKq62yzyAGjg2IHWI67
+        // Using LIVE mode Stripe keys (both frontend and backend must match)
+        // Frontend: pk_live_pri1IepedMvGQmLCFrV4kVzF
         // Backend (Edge Function): Configured in Vercel environment variables
         window.ENV = {
             VITE_SUPABASE_URL: supabaseUrl,
             VITE_SUPABASE_ANON_KEY: supabaseKey,
-            VITE_STRIPE_PUBLISHABLE_KEY: 'pk_test_s9GdaTKq62yzyAGjg2IHWI67'
+            VITE_STRIPE_PUBLISHABLE_KEY: 'pk_live_pri1IepedMvGQmLCFrV4kVzF'
         };
     </script>
 
@@ -1412,7 +1412,7 @@
             const cardElement = document.getElementById('wizard-card-element');
             if (!cardElement) return;
 
-            const stripeKey = window.ENV?.VITE_STRIPE_PUBLISHABLE_KEY || 'pk_test_s9GdaTKq62yzyAGjg2IHWI67';
+            const stripeKey = window.ENV?.VITE_STRIPE_PUBLISHABLE_KEY || 'pk_live_pri1IepedMvGQmLCFrV4kVzF';
 
             if (!wizardPaymentStripe) {
                 wizardPaymentStripe = Stripe(stripeKey);
