@@ -842,12 +842,19 @@
 
         // Update payment method display in charge summary
         function updatePaymentMethodInChargeSummary(customer) {
+            console.log('🔍 updatePaymentMethodInChargeSummary called with customer:', customer);
+
             const paymentMethodSelect = document.getElementById('paymentMethodSelect');
-            if (!paymentMethodSelect) return;
+            if (!paymentMethodSelect) {
+                console.warn('⚠️ paymentMethodSelect not found');
+                return;
+            }
 
             // Check if customer has payment methods
             if (customer && customer.payment_methods && customer.payment_methods.length > 0) {
                 const pm = customer.payment_methods[0];
+                console.log('💳 Found payment method:', pm);
+
                 const brand = pm.card.brand.charAt(0).toUpperCase() + pm.card.brand.slice(1);
                 const last4 = pm.card.last4;
                 const expMonth = String(pm.card.exp_month).padStart(2, '0');
@@ -870,11 +877,34 @@
                 // Store payment method ID globally
                 window.customerPaymentMethodId = pm.id;
 
-                console.log('✅ Payment method available:', `${brand} •••• ${last4}`);
+                // Add visual indicator next to Payment Method label
+                const paymentMethodSelector = document.querySelector('.payment-method-selector');
+                if (paymentMethodSelector) {
+                    let indicator = paymentMethodSelector.querySelector('.payment-method-indicator');
+                    if (!indicator) {
+                        indicator = document.createElement('div');
+                        indicator.className = 'payment-method-indicator';
+                        indicator.style.cssText = 'display: inline-block; margin-left: 10px; padding: 4px 12px; background: #e8f5e9; border: 1px solid #4caf50; border-radius: 4px; color: #2e7d32; font-size: 13px; font-weight: 500;';
+                        const label = paymentMethodSelector.querySelector('label');
+                        if (label) {
+                            label.appendChild(indicator);
+                        }
+                    }
+                    indicator.textContent = `✓ Card on file: ${brand} ••${last4}`;
+                    indicator.style.display = 'inline-block';
+                }
+
+                console.log(`✅ Payment method added to dropdown: ${brand} •••• ${last4} (${pm.id})`);
             } else {
+                console.log('⚠️ Customer has no saved payment methods. customer.payment_methods:', customer?.payment_methods);
+
                 // Remove saved card option if it exists
                 const existingSaved = paymentMethodSelect?.querySelector('option[value="saved_card"]');
                 if (existingSaved) existingSaved.remove();
+
+                // Hide visual indicator
+                const indicator = document.querySelector('.payment-method-indicator');
+                if (indicator) indicator.style.display = 'none';
 
                 // Reset to default (stripe)
                 if (paymentMethodSelect) paymentMethodSelect.value = 'stripe';
@@ -1553,6 +1583,132 @@
             };
 
             console.log('✅ selectServiceDirect wrapper installed');
+        });
+    </script>
+
+    <!-- Enhanced Charge Flow - Use Saved Payment Methods -->
+    <script>
+        window.addEventListener('DOMContentLoaded', function() {
+            setTimeout(() => {
+                if (window.adminApp && window.adminApp.chargeCustomer) {
+                    const originalChargeMethod = window.adminApp.chargeCustomer.bind(window.adminApp);
+
+                    // Override chargeCustomer to use saved payment method when available
+                    window.adminApp.chargeCustomer = async function() {
+                        console.log('🚀 Enhanced chargeCustomer called');
+
+                        const customer = window.selectedCustomer || window.adminApp.selectedCustomer;
+                        const paymentMethodId = window.customerPaymentMethodId;
+
+                        console.log('Customer:', customer);
+                        console.log('Payment Method ID:', paymentMethodId);
+                        console.log('Service Key:', window.currentServiceKey);
+
+                        // If we have a customer with saved payment method, charge directly
+                        if (customer && paymentMethodId && window.currentServiceKey) {
+                            console.log('✅ Using saved payment method - charging directly');
+
+                            try {
+                                // Get the amount
+                                const totalCostDisplay = document.getElementById('totalCostDisplay');
+                                const amount = totalCostDisplay ? parseFloat(totalCostDisplay.textContent.replace('$', '').replace(',', '')) : 0;
+
+                                if (amount <= 0) {
+                                    alert('Invalid charge amount');
+                                    return;
+                                }
+
+                                console.log(`💰 Charging $${amount} to ${customer.name} using ${paymentMethodId}`);
+
+                                // Show loading state
+                                const chargeButton = document.getElementById('chargeButton');
+                                const originalButtonText = chargeButton.textContent;
+                                chargeButton.disabled = true;
+                                chargeButton.textContent = '💳 Processing...';
+
+                                // Collect metadata
+                                const metadata = {
+                                    service_key: window.currentServiceKey,
+                                    service_name: window.currentServiceKey.replace(/_/g, ' '),
+                                    customer_name: customer.name,
+                                    customer_email: customer.email,
+                                    boat_name: window.selectedBoat?.name || '',
+                                    boat_length: window.selectedBoat?.length || ''
+                                };
+
+                                const description = `${metadata.service_name} - ${customer.name}${metadata.boat_name ? ' - ' + metadata.boat_name : ''}`;
+
+                                // Call our new charge endpoint
+                                const API_BASE_URL = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
+                                    ? 'http://localhost:3001/api'
+                                    : '/api';
+
+                                const response = await fetch(`${API_BASE_URL}/charge-customer`, {
+                                    method: 'POST',
+                                    headers: {
+                                        'Content-Type': 'application/json'
+                                    },
+                                    body: JSON.stringify({
+                                        customerId: customer.id,
+                                        amount: Math.round(amount * 100), // Convert to cents
+                                        description: description,
+                                        metadata: metadata,
+                                        paymentMethodId: paymentMethodId
+                                    })
+                                });
+
+                                const result = await response.json();
+
+                                // Reset button
+                                chargeButton.disabled = false;
+                                chargeButton.textContent = originalButtonText;
+
+                                if (result.success) {
+                                    console.log('✅ Charge successful:', result);
+
+                                    // Show success message
+                                    const resultDiv = document.getElementById('chargeResult');
+                                    if (resultDiv) {
+                                        resultDiv.innerHTML = `
+                                            <div class="success-message" style="padding: 20px; background: #e8f5e9; border: 2px solid #4caf50; border-radius: 8px; margin: 20px 0;">
+                                                <h3 style="color: #2e7d32; margin: 0 0 10px 0;">✅ Payment Successful!</h3>
+                                                <p style="margin: 5px 0;"><strong>Amount:</strong> $${amount.toFixed(2)}</p>
+                                                <p style="margin: 5px 0;"><strong>Customer:</strong> ${customer.name}</p>
+                                                <p style="margin: 5px 0;"><strong>Payment Intent:</strong> ${result.paymentIntent.id}</p>
+                                                <p style="margin: 5px 0;"><strong>Charge ID:</strong> ${result.chargeId}</p>
+                                            </div>
+                                        `;
+                                        resultDiv.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+                                    }
+
+                                    // Store for conditions logging
+                                    window.lastChargePaymentIntentId = result.paymentIntent.id;
+
+                                } else {
+                                    console.error('❌ Charge failed:', result);
+                                    alert(`Charge failed: ${result.error || result.details || 'Unknown error'}`);
+                                }
+
+                            } catch (error) {
+                                console.error('❌ Error charging customer:', error);
+                                alert(`Error: ${error.message}`);
+
+                                // Reset button
+                                const chargeButton = document.getElementById('chargeButton');
+                                chargeButton.disabled = false;
+                                chargeButton.textContent = '💳 Charge Customer';
+                            }
+
+                        } else {
+                            // No saved payment method - use original modal flow
+                            console.log('⚠️ No saved payment method - using modal flow');
+                            return await originalChargeMethod();
+                        }
+                    };
+
+                    console.log('✅ Enhanced charge flow with saved payment method support installed');
+                }
+            }, 2000); // Wait for adminApp to fully initialize
         });
     </script>
 </body>
