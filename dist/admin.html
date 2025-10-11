@@ -1733,6 +1733,78 @@
                                         chargeId: result.chargeId
                                     };
 
+                                    // Send email receipt to customer
+                                    (async () => {
+                                        try {
+                                            console.log('📧 Sending receipt email to customer...');
+                                            const emailResponse = await fetch(`${API_BASE_URL}/send-receipt`, {
+                                                method: 'POST',
+                                                headers: {
+                                                    'Content-Type': 'application/json'
+                                                },
+                                                body: JSON.stringify({
+                                                    customerEmail: customer.email,
+                                                    customerName: customer.name,
+                                                    amount: amount,
+                                                    serviceName: metadata.service_name,
+                                                    boatName: metadata.boat_name,
+                                                    boatLength: metadata.boat_length,
+                                                    paymentIntentId: result.paymentIntent.id,
+                                                    chargeId: result.chargeId,
+                                                    serviceDate: new Date().toISOString()
+                                                })
+                                            });
+
+                                            const emailResult = await emailResponse.json();
+                                            if (emailResult.success) {
+                                                console.log('✅ Receipt email sent successfully');
+                                            } else {
+                                                console.error('❌ Failed to send receipt email:', emailResult.error);
+                                            }
+                                        } catch (error) {
+                                            console.error('❌ Error sending receipt email:', error);
+                                        }
+                                    })();
+
+                                    // Save service log to database for Portal access
+                                    (async () => {
+                                        try {
+                                            console.log('📝 Saving service log to database...');
+                                            const serviceLogResponse = await fetch(`${API_BASE_URL}/save-service-log`, {
+                                                method: 'POST',
+                                                headers: {
+                                                    'Content-Type': 'application/json'
+                                                },
+                                                body: JSON.stringify({
+                                                    customerId: customer.id,
+                                                    boatId: window.selectedBoat?.id || null,
+                                                    serviceType: window.currentServiceKey,
+                                                    serviceName: metadata.service_name,
+                                                    serviceDate: new Date().toISOString().split('T')[0],
+                                                    serviceTime: new Date().toTimeString().split(' ')[0],
+                                                    amountCharged: amount,
+                                                    paymentIntentId: result.paymentIntent.id,
+                                                    chargeId: result.chargeId,
+                                                    serviceDetails: {
+                                                        customer_name: customer.name,
+                                                        customer_email: customer.email,
+                                                        boat_name: metadata.boat_name,
+                                                        boat_length: metadata.boat_length
+                                                    }
+                                                })
+                                            });
+
+                                            const serviceLogResult = await serviceLogResponse.json();
+                                            if (serviceLogResult.success) {
+                                                console.log('✅ Service log saved successfully');
+                                            } else {
+                                                console.error('❌ Failed to save service log:', serviceLogResult.error);
+                                            }
+                                        } catch (error) {
+                                            console.error('❌ Error saving service log:', error);
+                                        }
+                                    })();
+
                                 } else {
                                     console.error('❌ Charge failed:', result);
                                     // Only re-enable button on failure
