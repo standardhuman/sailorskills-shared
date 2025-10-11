@@ -75,24 +75,40 @@ export default async function handler(req, res) {
 
         // Step 3: Process Stripe customer matches
 
+        // Helper function to fetch payment methods for a customer
+        const fetchPaymentMethods = async (customerId) => {
+            try {
+                const pmUrl = `https://api.stripe.com/v1/payment_methods?customer=${customerId}&type=card&limit=10`;
+                const pmResponse = await fetch(pmUrl, {
+                    method: 'GET',
+                    headers: {
+                        'Authorization': `Bearer ${process.env.STRIPE_SECRET_KEY}`,
+                        'Stripe-Version': '2024-06-20'
+                    }
+                });
+
+                if (pmResponse.ok) {
+                    const pmData = await pmResponse.json();
+                    return pmData.data.map(pm => ({
+                        id: pm.id,
+                        type: pm.type,
+                        card: pm.card || {}
+                    }));
+                }
+            } catch (error) {
+                console.error(`Error fetching payment methods for ${customerId}:`, error);
+            }
+            return [];
+        };
+
         // Helper function to add a result
-        const addResult = (customer, supabaseCustomer, boat = null) => {
+        const addResult = async (customer, supabaseCustomer, boat = null) => {
             const key = `${customer.id}-${boat?.id || 'no-boat'}`;
             if (processedCustomerBoats.has(key)) return; // Skip duplicates
             processedCustomerBoats.add(key);
 
-            // Get payment methods from customer object
-            // Stripe expands invoice_settings.default_payment_method as an object, not array
-            let paymentMethods = [];
-            const defaultPM = customer.invoice_settings?.default_payment_method;
-            if (defaultPM && typeof defaultPM === 'object' && defaultPM.id) {
-                // Format payment method for frontend
-                paymentMethods = [{
-                    id: defaultPM.id,
-                    type: defaultPM.type,
-                    card: defaultPM.card || {}  // card object contains brand, last4, exp_month, exp_year
-                }];
-            }
+            // Fetch ALL payment methods for this customer (not just default)
+            const paymentMethods = await fetchPaymentMethods(customer.id);
 
             if (boat) {
                 results.push({
@@ -150,12 +166,14 @@ export default async function handler(req, res) {
                 console.log(`  👤 ${customer.name}: ${boats?.length || 0} boats`);
 
                 if (boats && boats.length > 0) {
-                    boats.forEach(boat => addResult(customer, supabaseCustomer, boat));
+                    for (const boat of boats) {
+                        await addResult(customer, supabaseCustomer, boat);
+                    }
                 } else {
-                    addResult(customer, supabaseCustomer, null);
+                    await addResult(customer, supabaseCustomer, null);
                 }
             } else {
-                addResult(customer, null, null);
+                await addResult(customer, null, null);
             }
         }
 
@@ -179,7 +197,7 @@ export default async function handler(req, res) {
 
                     if (stripeCustomerResponse.ok) {
                         const stripeCustomer = await stripeCustomerResponse.json();
-                        addResult(stripeCustomer, supabaseCustomer, boat);
+                        await addResult(stripeCustomer, supabaseCustomer, boat);
                         console.log(`  🚤 Found boat "${boat.name}" for ${stripeCustomer.name}`);
                     }
                 }
