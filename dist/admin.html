@@ -1733,43 +1733,15 @@
                                         chargeId: result.chargeId
                                     };
 
-                                    // Send email receipt to customer
+                                    // Send email receipt to customer via Supabase Edge Function
                                     (async () => {
                                         try {
-                                            console.log('📧 Sending receipt email to customer...');
-                                            const emailResponse = await fetch(`${API_BASE_URL}/send-receipt`, {
-                                                method: 'POST',
-                                                headers: {
-                                                    'Content-Type': 'application/json'
-                                                },
-                                                body: JSON.stringify({
-                                                    customerEmail: customer.email,
-                                                    customerName: customer.name,
-                                                    amount: amount,
-                                                    serviceName: metadata.service_name,
-                                                    boatName: metadata.boat_name,
-                                                    boatLength: metadata.boat_length,
-                                                    paymentIntentId: result.paymentIntent.id,
-                                                    chargeId: result.chargeId,
-                                                    serviceDate: new Date().toISOString()
-                                                })
-                                            });
+                                            console.log('📧 Sending receipt email to customer via Supabase...');
 
-                                            const emailResult = await emailResponse.json();
-                                            if (emailResult.success) {
-                                                console.log('✅ Receipt email sent successfully');
-                                            } else {
-                                                console.error('❌ Failed to send receipt email:', emailResult.error);
-                                            }
-                                        } catch (error) {
-                                            console.error('❌ Error sending receipt email:', error);
-                                        }
-                                    })();
+                                            // Get service log ID if it was saved
+                                            let serviceLogId = null;
 
-                                    // Save service log to database for Portal access
-                                    (async () => {
-                                        try {
-                                            console.log('📝 Saving service log to database...');
+                                            // First save the service log, then send email with the log ID
                                             const serviceLogResponse = await fetch(`${API_BASE_URL}/save-service-log`, {
                                                 method: 'POST',
                                                 headers: {
@@ -1796,12 +1768,33 @@
 
                                             const serviceLogResult = await serviceLogResponse.json();
                                             if (serviceLogResult.success) {
-                                                console.log('✅ Service log saved successfully');
+                                                serviceLogId = serviceLogResult.serviceLogId;
+                                                console.log('✅ Service log saved:', serviceLogId);
+                                            }
+
+                                            // Call Supabase Edge Function for email
+                                            const emailResponse = await window.supabase.functions.invoke('send-receipt', {
+                                                body: {
+                                                    customerEmail: customer.email,
+                                                    customerName: customer.name,
+                                                    amount: amount,
+                                                    serviceName: metadata.service_name,
+                                                    boatName: metadata.boat_name,
+                                                    boatLength: metadata.boat_length,
+                                                    paymentIntentId: result.paymentIntent.id,
+                                                    chargeId: result.chargeId,
+                                                    serviceDate: new Date().toISOString(),
+                                                    serviceLogId: serviceLogId
+                                                }
+                                            });
+
+                                            if (emailResponse.error) {
+                                                console.error('❌ Failed to send receipt email:', emailResponse.error);
                                             } else {
-                                                console.error('❌ Failed to save service log:', serviceLogResult.error);
+                                                console.log('✅ Receipt email sent successfully:', emailResponse.data);
                                             }
                                         } catch (error) {
-                                            console.error('❌ Error saving service log:', error);
+                                            console.error('❌ Error sending receipt email:', error);
                                         }
                                     })();
 
