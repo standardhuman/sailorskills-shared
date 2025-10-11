@@ -79,6 +79,8 @@ export default async function handler(req, res) {
         const fetchPaymentMethods = async (customerId) => {
             try {
                 const pmUrl = `https://api.stripe.com/v1/payment_methods?customer=${customerId}&type=card&limit=10`;
+                console.log(`🔍 Fetching payment methods for customer ${customerId}`);
+
                 const pmResponse = await fetch(pmUrl, {
                     method: 'GET',
                     headers: {
@@ -87,16 +89,22 @@ export default async function handler(req, res) {
                     }
                 });
 
-                if (pmResponse.ok) {
-                    const pmData = await pmResponse.json();
-                    return pmData.data.map(pm => ({
+                const pmData = await pmResponse.json();
+                console.log(`📊 Payment methods response for ${customerId}:`, JSON.stringify(pmData));
+
+                if (pmResponse.ok && pmData.data) {
+                    const methods = pmData.data.map(pm => ({
                         id: pm.id,
                         type: pm.type,
                         card: pm.card || {}
                     }));
+                    console.log(`✅ Found ${methods.length} payment methods for ${customerId}`);
+                    return methods;
+                } else {
+                    console.error(`❌ Failed to fetch payment methods for ${customerId}:`, pmData);
                 }
             } catch (error) {
-                console.error(`Error fetching payment methods for ${customerId}:`, error);
+                console.error(`❌ Error fetching payment methods for ${customerId}:`, error);
             }
             return [];
         };
