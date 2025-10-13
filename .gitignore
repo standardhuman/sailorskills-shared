@@ -2,7 +2,7 @@
 node_modules/
 
 # Build output
-dist/
+# dist/ - REMOVED: Vercel needs dist/ in repo for static site deployment
 build/
 lib/
 *.tgz

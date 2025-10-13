@@ -1,0 +1,106 @@
+/**
+ * Authentication modal styles
+ * Shared across all Sailor Skills products
+ */
+
+.ss-auth-modal {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.8);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 10000;
+  backdrop-filter: blur(10px);
+}
+
+.ss-auth-modal-content {
+  background: white;
+  padding: 40px;
+  border-radius: 16px;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+  max-width: 400px;
+  width: 90%;
+}
+
+.ss-auth-header {
+  text-align: center;
+  margin-bottom: 30px;
+}
+
+.ss-auth-header h2 {
+  margin: 0 0 10px 0;
+  color: #2c3e50;
+  font-size: 28px;
+}
+
+.ss-auth-header p {
+  margin: 0;
+  color: #7f8c8d;
+  font-size: 14px;
+}
+
+.ss-auth-form {
+  margin-bottom: 20px;
+}
+
+.ss-form-group {
+  margin-bottom: 15px;
+}
+
+.ss-auth-input {
+  width: 100%;
+  padding: 15px;
+  border: 2px solid #ddd;
+  border-radius: 8px;
+  font-size: 16px;
+  transition: border-color 0.3s;
+  box-sizing: border-box;
+}
+
+.ss-auth-input:focus {
+  outline: none;
+  border-color: #667eea;
+}
+
+.ss-auth-btn {
+  width: 100%;
+  padding: 15px;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-size: 16px;
+  font-weight: bold;
+  cursor: pointer;
+  transition: transform 0.2s, box-shadow 0.2s;
+  margin-top: 15px;
+}
+
+.ss-auth-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+}
+
+.ss-auth-btn:active {
+  transform: translateY(0);
+}
+
+.ss-auth-footer {
+  text-align: center;
+  color: #95a5a6;
+  font-size: 12px;
+}
+
+.ss-auth-error {
+  padding: 10px;
+  background: #ffe6e6;
+  border: 1px solid #ffcccc;
+  border-radius: 6px;
+  color: #d63031;
+  font-size: 14px;
+  margin-top: 10px;
+}

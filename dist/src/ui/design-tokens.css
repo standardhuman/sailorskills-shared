@@ -1,0 +1,191 @@
+/**
+ * Sailor Skills Design System
+ * Brand design tokens and CSS variables
+ *
+ * Based on the estimator service design aesthetic:
+ * - Clean, minimal, professional
+ * - Montserrat typography
+ * - Sharp corners (no border-radius)
+ * - Blue-gray primary color palette
+ */
+
+:root {
+  /* ===== COLORS ===== */
+
+  /* Primary Brand Colors */
+  --ss-primary: #345475;           /* Dark blue-gray - primary brand color */
+  --ss-primary-hover: #2a3f5f;     /* Darker on hover */
+  --ss-primary-light: #5a7fa6;     /* Lighter variant for links */
+
+  /* Text Colors */
+  --ss-text-dark: #181818;         /* Primary text - dark gray */
+  --ss-text-medium: #6d7b89;       /* Secondary text - medium gray */
+  --ss-text-light: #777777;        /* Tertiary text - light gray */
+
+  /* UI Colors */
+  --ss-white: #ffffff;
+  --ss-bg-light: #fafafa;          /* Very light gray background */
+  --ss-bg-medium: #f5f5f5;         /* Light gray background */
+  --ss-border: #d0d0d0;            /* Border color */
+  --ss-border-dark: #345475;       /* Dark border for emphasis */
+  --ss-border-subtle: #e0e0e0;     /* Subtle border */
+
+  /* Accent Colors */
+  --ss-accent-blue: #116DFF;       /* Accent blue for highlights */
+  --ss-link-blue: #0000ee;         /* Standard link blue */
+
+  /* Status Colors */
+  --ss-success: #00b894;
+  --ss-success-hover: #00a383;
+  --ss-danger: #d63031;
+  --ss-danger-hover: #c0281f;
+  --ss-warning: #fdcb6e;
+  --ss-info: #667eea;
+
+  /* ===== TYPOGRAPHY ===== */
+
+  /* Font Families */
+  --ss-font-primary: 'Montserrat', Arial, sans-serif;
+  --ss-font-fallback: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+
+  /* Font Sizes */
+  --ss-text-xs: 0.8125rem;         /* 13px */
+  --ss-text-sm: 0.875rem;          /* 14px */
+  --ss-text-base: 1rem;            /* 16px */
+  --ss-text-lg: 1.25rem;           /* 20px */
+  --ss-text-xl: 1.5rem;            /* 24px */
+  --ss-text-2xl: 2.5rem;           /* 40px */
+  --ss-text-3xl: 3.125rem;         /* 50px */
+  --ss-text-4xl: 4rem;             /* 64px */
+  --ss-text-hero: 6.25rem;         /* 100px */
+
+  /* Font Weights */
+  --ss-weight-normal: 400;
+  --ss-weight-medium: 500;
+  --ss-weight-semibold: 600;
+  --ss-weight-bold: 700;
+
+  /* Line Heights */
+  --ss-leading-tight: 1.2;
+  --ss-leading-normal: 1.5;
+  --ss-leading-relaxed: 1.6;
+  --ss-leading-loose: 1.8;
+
+  /* Letter Spacing */
+  --ss-tracking-wide: 0.05em;
+  --ss-tracking-wider: 0.2em;
+
+  /* ===== SPACING ===== */
+
+  --ss-space-xs: 0.25rem;          /* 4px */
+  --ss-space-sm: 0.5rem;           /* 8px */
+  --ss-space-md: 1rem;             /* 16px */
+  --ss-space-lg: 1.5rem;           /* 24px */
+  --ss-space-xl: 2rem;             /* 32px */
+  --ss-space-2xl: 2.5rem;          /* 40px */
+  --ss-space-3xl: 3rem;            /* 48px */
+
+  /* ===== BORDERS ===== */
+
+  /* Border Radius - Sharp corners for Sailor Skills aesthetic */
+  --ss-radius-none: 0px;           /* Sharp corners everywhere */
+  --ss-radius-sm: 4px;             /* Minimal rounding (rarely used) */
+  --ss-radius-md: 8px;             /* Medium rounding (rarely used) */
+
+  /* Border Widths */
+  --ss-border-width: 1px;
+  --ss-border-width-thick: 2px;
+
+  /* ===== SHADOWS ===== */
+
+  /* Minimal shadows for flat design */
+  --ss-shadow-sm: 0 2px 4px rgba(0, 0, 0, 0.05);
+  --ss-shadow-md: 0 4px 12px rgba(0, 0, 0, 0.1);
+  --ss-shadow-lg: 0 20px 60px rgba(0, 0, 0, 0.3);
+
+  /* ===== TRANSITIONS ===== */
+
+  --ss-transition-fast: 0.2s ease;
+  --ss-transition-normal: 0.3s ease;
+
+  /* ===== LAYOUT ===== */
+
+  --ss-max-width-sm: 400px;
+  --ss-max-width-md: 800px;
+  --ss-max-width-lg: 980px;
+  --ss-max-width-xl: 1200px;
+  --ss-max-width-2xl: 1600px;
+
+  /* Navigation */
+  --ss-nav-height: 69px;
+
+  /* Z-index layers */
+  --ss-z-base: 1;
+  --ss-z-nav: 100;
+  --ss-z-modal: 9999;
+  --ss-z-toast: 10000;
+}
+
+/* ===== GLOBAL RESETS ===== */
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+/* ===== BASE STYLES ===== */
+
+body {
+  font-family: var(--ss-font-primary);
+  background-color: var(--ss-white);
+  color: var(--ss-text-dark);
+  line-height: var(--ss-leading-relaxed);
+  margin: 0;
+  padding: 0;
+  min-height: 100vh;
+}
+
+/* ===== UTILITY CLASSES ===== */
+
+/* Typography utilities */
+.ss-font-primary { font-family: var(--ss-font-primary); }
+.ss-font-fallback { font-family: var(--ss-font-fallback); }
+
+.ss-text-xs { font-size: var(--ss-text-xs); }
+.ss-text-sm { font-size: var(--ss-text-sm); }
+.ss-text-base { font-size: var(--ss-text-base); }
+.ss-text-lg { font-size: var(--ss-text-lg); }
+.ss-text-xl { font-size: var(--ss-text-xl); }
+.ss-text-2xl { font-size: var(--ss-text-2xl); }
+.ss-text-3xl { font-size: var(--ss-text-3xl); }
+
+.ss-weight-normal { font-weight: var(--ss-weight-normal); }
+.ss-weight-medium { font-weight: var(--ss-weight-medium); }
+.ss-weight-semibold { font-weight: var(--ss-weight-semibold); }
+.ss-weight-bold { font-weight: var(--ss-weight-bold); }
+
+.ss-uppercase { text-transform: uppercase; }
+.ss-text-center { text-align: center; }
+
+/* Color utilities */
+.ss-text-primary { color: var(--ss-primary); }
+.ss-text-dark { color: var(--ss-text-dark); }
+.ss-text-medium { color: var(--ss-text-medium); }
+.ss-text-light { color: var(--ss-text-light); }
+
+.ss-bg-white { background-color: var(--ss-white); }
+.ss-bg-light { background-color: var(--ss-bg-light); }
+.ss-bg-medium { background-color: var(--ss-bg-medium); }
+
+/* Spacing utilities */
+.ss-mt-sm { margin-top: var(--ss-space-sm); }
+.ss-mt-md { margin-top: var(--ss-space-md); }
+.ss-mt-lg { margin-top: var(--ss-space-lg); }
+.ss-mb-sm { margin-bottom: var(--ss-space-sm); }
+.ss-mb-md { margin-bottom: var(--ss-space-md); }
+.ss-mb-lg { margin-bottom: var(--ss-space-lg); }
+
+.ss-p-sm { padding: var(--ss-space-sm); }
+.ss-p-md { padding: var(--ss-space-md); }
+.ss-p-lg { padding: var(--ss-space-lg); }
