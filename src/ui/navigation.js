@@ -151,9 +151,10 @@ export function injectNavigation(options = {}) {
     const navContainer = document.createElement('div');
     navContainer.innerHTML = breadcrumbHTML + navHTML + subNavHTML;
 
-    // Insert before first child
+    // Insert before first child - keep reference to avoid reversing order
+    const referenceNode = body.firstChild;
     while (navContainer.firstChild) {
-        body.insertBefore(navContainer.firstChild, body.firstChild);
+        body.insertBefore(navContainer.firstChild, referenceNode);
     }
 }
 
