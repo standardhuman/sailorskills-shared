@@ -255,6 +255,20 @@ grep -r "/shared/src/" --include="*.html" --include="*.js" .
 3. Wait 1 hour for cache to expire naturally
 4. Check you're on the latest deployment
 
+### Problem: Navigation tiers in wrong order (RESOLVED)
+
+**Symptom:** Breadcrumb appears at bottom instead of top, sub-nav at top instead of bottom
+
+**Status:** ✅ **FIXED** as of October 13, 2025
+
+**Solution:** This was a bug in the shared navigation.js file that has been fixed. If you're still seeing this:
+1. Hard refresh your browser (Cmd+Shift+R / Ctrl+F5)
+2. Clear browser cache
+3. Verify you're loading from CDN (not local cached copy)
+4. Check that CDN is serving latest version: `curl https://sailorskills-shared.vercel.app/src/ui/navigation.js | grep referenceNode`
+
+**Technical Details:** The DOM insertion loop was using a changing reference point that reversed element order. Fixed by saving a constant reference before the loop.
+
 ---
 
 ## Verification Checklist
@@ -334,7 +348,7 @@ git push origin main
 
 Track migration progress across all services:
 
-- [  ] Dashboard - https://sailorskills-dashboard.vercel.app
+- [x] Dashboard - https://sailorskills-dashboard.vercel.app ✅ (Verified Oct 2025)
 - [  ] Billing - https://sailorskills-billing.vercel.app
 - [  ] Operations - https://sailorskills-operations.vercel.app
 - [  ] Inventory - https://sailorskills-inventory.vercel.app
