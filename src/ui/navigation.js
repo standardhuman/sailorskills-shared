@@ -149,7 +149,7 @@ export function injectNavigation(options = {}) {
     // Inject at the beginning of body
     const body = document.body;
     const navContainer = document.createElement('div');
-    navContainer.innerHTML = navHTML + breadcrumbHTML + subNavHTML;
+    navContainer.innerHTML = breadcrumbHTML + navHTML + subNavHTML;
 
     // Insert before first child
     while (navContainer.firstChild) {
