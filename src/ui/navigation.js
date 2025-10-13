@@ -6,7 +6,7 @@
 /**
  * Create standardized global navigation header
  * @param {Object} options - Navigation options
- * @param {string} options.currentPage - Current active page ('admin'|'portal'|'billing'|'inventory'|'schedule'|'estimator')
+ * @param {string} options.currentPage - Current active page ('dashboard'|'billing'|'operations'|'customers'|'inventory'|'video'|'estimator')
  * @param {Function} [options.onLogout] - Optional logout handler
  * @returns {string} HTML string for the navigation header
  */
@@ -15,8 +15,10 @@ export function createGlobalNav(options = {}) {
 
     // Determine if this is a public-facing service or internal service
     // Public services: Estimator only
-    // Internal services: Admin, Portal, Billing, Inventory, Schedule
+    // Customer-facing: Customers portal
+    // Internal services: Dashboard, Billing, Operations, Inventory, Video
     const isPublicService = currentPage === 'estimator';
+    const isCustomerPortal = currentPage === 'customers';
 
     let navItems;
     if (isPublicService) {
@@ -28,14 +30,20 @@ export function createGlobalNav(options = {}) {
             { id: 'detailing', label: 'DETAILING', url: 'https://www.sailorskills.com/detailing' },
             { id: 'deliveries', label: 'DELIVERIES', url: 'https://www.sailorskills.com/deliveries' }
         ];
-    } else {
-        // Internal navigation for Admin, Portal, Billing, Inventory, Schedule
+    } else if (isCustomerPortal) {
+        // Customer portal navigation (minimal)
         navItems = [
-            { id: 'admin', label: 'ADMIN', url: 'https://sailorskills-admin.vercel.app' },
-            { id: 'portal', label: 'PORTAL', url: 'https://sailorskills-portal.vercel.app' },
+            { id: 'home', label: 'HOME', url: 'https://www.sailorskills.com/' },
+            { id: 'contact', label: 'CONTACT', url: 'https://www.sailorskills.com/contact' }
+        ];
+    } else {
+        // Internal navigation for Dashboard, Billing, Operations, Inventory, Video, Estimator
+        navItems = [
+            { id: 'dashboard', label: 'DASHBOARD', url: 'https://sailorskills-dashboard.vercel.app' },
             { id: 'billing', label: 'BILLING', url: 'https://sailorskills-billing.vercel.app' },
+            { id: 'operations', label: 'OPERATIONS', url: 'https://sailorskills-operations.vercel.app' },
             { id: 'inventory', label: 'INVENTORY', url: 'https://sailorskills-inventory.vercel.app' },
-            { id: 'schedule', label: 'SCHEDULE', url: 'https://sailorskills-schedule.vercel.app' },
+            { id: 'video', label: 'VIDEO', url: 'https://sailorskills-video.vercel.app' },
             { id: 'estimator', label: 'ESTIMATOR', url: 'https://sailorskills-estimator.vercel.app' }
         ];
     }
@@ -120,7 +128,7 @@ export function injectNavigation(options = {}) {
  *   currentPage: 'inventory',
  *   breadcrumbs: [
  *     { label: 'Home', url: 'https://www.sailorskills.com/' },
- *     { label: 'Admin', url: 'https://sailorskills-billing.vercel.app/admin.html' },
+ *     { label: 'Dashboard', url: 'https://sailorskills-dashboard.vercel.app' },
  *     { label: 'Inventory' }
  *   ]
  * });
