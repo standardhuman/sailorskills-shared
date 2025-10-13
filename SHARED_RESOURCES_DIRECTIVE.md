@@ -121,7 +121,7 @@ currentSubPage: 'dashboard' // Highlights the active sub-page
 ### Complete Integration Example
 
 ```javascript
-import { initNavigation } from '/shared/src/ui/navigation.js';
+import { initNavigation } from 'https://sailorskills-shared.vercel.app/src/ui/navigation.js';
 
 initNavigation({
   // Tier 2: Main service (REQUIRED)
@@ -137,8 +137,8 @@ initNavigation({
   // Tier 3: Sub-pages (OPTIONAL - only if service has multiple pages)
   subPages: [
     { id: 'dashboard', label: 'Dashboard', url: '/dashboard.html' },
-    { id: 'boats', label: 'Boats & History', url: '/boats.html' },
-    { id: 'packing', label: 'Packing Lists', url: '/packing.html' }
+    { id: 'boats', label: 'Boats & History', url: '/dashboard/boats.html' },
+    { id: 'packing', label: 'Packing Lists', url: '/dashboard/packing.html' }
   ],
   currentSubPage: 'dashboard'
 });
@@ -274,12 +274,12 @@ border-radius: 0.5rem;
 
 #### 1. Design Tokens (REQUIRED)
 ```html
-<link rel="stylesheet" href="/shared/src/ui/design-tokens.css">
+<link rel="stylesheet" href="https://sailorskills-shared.vercel.app/src/ui/design-tokens.css">
 ```
 
 #### 2. Shared Styles (REQUIRED)
 ```html
-<link rel="stylesheet" href="/shared/src/ui/styles.css">
+<link rel="stylesheet" href="https://sailorskills-shared.vercel.app/src/ui/styles.css">
 ```
 
 #### 3. Montserrat Font (REQUIRED)
@@ -290,7 +290,7 @@ border-radius: 0.5rem;
 #### 4. Three-Tier Navigation (REQUIRED for internal services)
 ```html
 <script type="module">
-  import { initNavigation } from '/shared/src/ui/navigation.js';
+  import { initNavigation } from 'https://sailorskills-shared.vercel.app/src/ui/navigation.js';
 
   initNavigation({
     currentPage: 'dashboard',  // Required: Main service
@@ -378,24 +378,25 @@ sailorskills-shared/
 
 ### Path Reference Guidelines
 
-**CRITICAL: Always use absolute paths from web root**
+**CRITICAL: Always use CDN URLs**
 
 ```html
-<!-- ✅ CORRECT - Absolute paths from root -->
-<link rel="stylesheet" href="/shared/src/ui/design-tokens.css">
-<link rel="stylesheet" href="/shared/src/ui/styles.css">
+<!-- ✅ CORRECT - CDN URLs -->
+<link rel="stylesheet" href="https://sailorskills-shared.vercel.app/src/ui/design-tokens.css">
+<link rel="stylesheet" href="https://sailorskills-shared.vercel.app/src/ui/styles.css">
 <script type="module">
-  import { initNavigation } from '/shared/src/ui/navigation.js';
+  import { initNavigation } from 'https://sailorskills-shared.vercel.app/src/ui/navigation.js';
 </script>
 ```
 
 ```html
-<!-- ❌ WRONG - Relative paths may break -->
+<!-- ❌ WRONG - Local paths no longer supported -->
+<link rel="stylesheet" href="/shared/src/ui/styles.css">
 <link rel="stylesheet" href="./shared/src/ui/styles.css">
 <link rel="stylesheet" href="../shared/src/ui/styles.css">
 ```
 
-**Rule of Thumb:** Always use `/shared/` (absolute path from web root).
+**Rule of Thumb:** Always use `https://sailorskills-shared.vercel.app/` CDN URLs for all shared assets.
 
 ---
 
@@ -528,7 +529,7 @@ initNavigation({
 **Type:** Public-facing
 
 **Requirements:**
-- Uses `/shared/` absolute paths for design tokens and styles
+- Uses CDN URLs for design tokens and styles
 - **NO navigation integration required** (public-facing)
 - **NO breadcrumbs required** (public-facing)
 - **Hero headers allowed and encouraged** (public-facing service)
@@ -536,8 +537,8 @@ initNavigation({
 **Integration:**
 ```html
 <!-- Only include design system, NOT navigation -->
-<link rel="stylesheet" href="/shared/src/ui/design-tokens.css">
-<link rel="stylesheet" href="/shared/src/ui/styles.css">
+<link rel="stylesheet" href="https://sailorskills-shared.vercel.app/src/ui/design-tokens.css">
+<link rel="stylesheet" href="https://sailorskills-shared.vercel.app/src/ui/styles.css">
 <!-- DO NOT include navigation.js -->
 
 <!-- Hero headers ARE allowed for public-facing services -->

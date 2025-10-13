@@ -35,16 +35,16 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700&display=swap" rel="stylesheet">
 
-  <!-- Shared Styles -->
-  <link rel="stylesheet" href="/shared/src/ui/design-tokens.css">
-  <link rel="stylesheet" href="/shared/src/ui/styles.css">
+  <!-- Shared Styles from CDN -->
+  <link rel="stylesheet" href="https://sailorskills-shared.vercel.app/src/ui/design-tokens.css">
+  <link rel="stylesheet" href="https://sailorskills-shared.vercel.app/src/ui/styles.css">
 </head>
 <body>
   <!-- Your content here -->
 
   <!-- Navigation Initialization -->
   <script type="module">
-    import { initNavigation } from '/shared/src/ui/navigation.js';
+    import { initNavigation } from 'https://sailorskills-shared.vercel.app/src/ui/navigation.js';
 
     initNavigation({
       // Tier 2: Main service
@@ -74,7 +74,7 @@
 ```html
 <!-- Same as above, but omit subPages and currentSubPage -->
 <script type="module">
-  import { initNavigation } from '/shared/src/ui/navigation.js';
+  import { initNavigation } from 'https://sailorskills-shared.vercel.app/src/ui/navigation.js';
 
   initNavigation({
     currentPage: 'billing',
@@ -264,8 +264,8 @@ currentSubPage: 'dashboard' // Highlights the active sub-page
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="/shared/src/ui/design-tokens.css">
-  <link rel="stylesheet" href="/shared/src/ui/styles.css">
+  <link rel="stylesheet" href="https://sailorskills-shared.vercel.app/src/ui/design-tokens.css">
+  <link rel="stylesheet" href="https://sailorskills-shared.vercel.app/src/ui/styles.css">
   <link rel="stylesheet" href="/css/dashboard.css">
 </head>
 <body>
@@ -278,7 +278,7 @@ currentSubPage: 'dashboard' // Highlights the active sub-page
 
   <!-- Navigation Initialization -->
   <script type="module">
-    import { initNavigation } from '/shared/src/ui/navigation.js';
+    import { initNavigation } from 'https://sailorskills-shared.vercel.app/src/ui/navigation.js';
 
     initNavigation({
       // Tier 2: Highlight Dashboard in main nav
@@ -320,8 +320,8 @@ currentSubPage: 'dashboard' // Highlights the active sub-page
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="/shared/src/ui/design-tokens.css">
-  <link rel="stylesheet" href="/shared/src/ui/styles.css">
+  <link rel="stylesheet" href="https://sailorskills-shared.vercel.app/src/ui/design-tokens.css">
+  <link rel="stylesheet" href="https://sailorskills-shared.vercel.app/src/ui/styles.css">
   <link rel="stylesheet" href="/css/billing.css">
 </head>
 <body>
@@ -331,7 +331,7 @@ currentSubPage: 'dashboard' // Highlights the active sub-page
   </main>
 
   <script type="module">
-    import { initNavigation } from '/shared/src/ui/navigation.js';
+    import { initNavigation } from 'https://sailorskills-shared.vercel.app/src/ui/navigation.js';
 
     initNavigation({
       currentPage: 'billing',
@@ -360,8 +360,8 @@ currentSubPage: 'dashboard' // Highlights the active sub-page
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="/shared/src/ui/design-tokens.css">
-  <link rel="stylesheet" href="/shared/src/ui/styles.css">
+  <link rel="stylesheet" href="https://sailorskills-shared.vercel.app/src/ui/design-tokens.css">
+  <link rel="stylesheet" href="https://sailorskills-shared.vercel.app/src/ui/styles.css">
   <link rel="stylesheet" href="/css/operations.css">
 </head>
 <body>
@@ -371,7 +371,7 @@ currentSubPage: 'dashboard' // Highlights the active sub-page
   </main>
 
   <script type="module">
-    import { initNavigation } from '/shared/src/ui/navigation.js';
+    import { initNavigation } from 'https://sailorskills-shared.vercel.app/src/ui/navigation.js';
 
     initNavigation({
       currentPage: 'operations',
@@ -415,8 +415,8 @@ Add these to the `<head>` of all HTML pages:
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="/shared/src/ui/design-tokens.css">
-<link rel="stylesheet" href="/shared/src/ui/styles.css">
+<link rel="stylesheet" href="https://sailorskills-shared.vercel.app/src/ui/design-tokens.css">
+<link rel="stylesheet" href="https://sailorskills-shared.vercel.app/src/ui/styles.css">
 ```
 
 ### 2. Initialize Three-Tier Navigation
@@ -424,7 +424,7 @@ Add this before the closing `</body>` tag:
 
 ```html
 <script type="module">
-  import { initNavigation } from '/shared/src/ui/navigation.js';
+  import { initNavigation } from 'https://sailorskills-shared.vercel.app/src/ui/navigation.js';
 
   initNavigation({
     // TIER 2: Main service navigation
@@ -535,7 +535,7 @@ After implementing:
 
 ## Important Notes
 
-1. **Always use absolute paths**: `/shared/src/ui/...` (not `./` or `../`)
+1. **Always use absolute paths**: `https://sailorskills-shared.vercel.app/src/ui/...` (not `./` or `../`)
 2. **Service IDs are lowercase**: 'dashboard', not 'Dashboard'
 3. **Labels are title case**: 'Dashboard', not 'dashboard'
 4. **No navigation for public services**: Estimator doesn't need nav
@@ -563,10 +563,10 @@ If you're unsure:
 
 **Solutions**:
 1. Check browser console for JavaScript errors
-2. Verify path to `/shared/src/ui/navigation.js` is correct
+2. Verify path to `https://sailorskills-shared.vercel.app/src/ui/navigation.js` is correct
 3. Ensure script is `type="module"`
 4. Verify `initNavigation()` is called
-5. Check that styles are loaded (`/shared/src/ui/styles.css`)
+5. Check that styles are loaded (`https://sailorskills-shared.vercel.app/src/ui/styles.css`)
 
 ### Wrong Service Highlighted
 
@@ -601,8 +601,8 @@ If you're unsure:
 **Problem**: Navigation doesn't match design
 
 **Solutions**:
-1. Verify `/shared/src/ui/design-tokens.css` is loaded
-2. Verify `/shared/src/ui/styles.css` is loaded
+1. Verify `https://sailorskills-shared.vercel.app/src/ui/design-tokens.css` is loaded
+2. Verify `https://sailorskills-shared.vercel.app/src/ui/styles.css` is loaded
 3. Check Montserrat font is included
 4. Inspect element to see if styles are being overridden
 5. Ensure shared styles load BEFORE custom styles
@@ -624,8 +624,8 @@ Before marking navigation as complete:
 
 **Setup:**
 - [ ] Montserrat font loaded in `<head>`
-- [ ] `/shared/src/ui/design-tokens.css` imported
-- [ ] `/shared/src/ui/styles.css` imported
+- [ ] `https://sailorskills-shared.vercel.app/src/ui/design-tokens.css` imported
+- [ ] `https://sailorskills-shared.vercel.app/src/ui/styles.css` imported
 - [ ] `initNavigation()` called before `</body>`
 
 **Tier 1 (Breadcrumb):**
