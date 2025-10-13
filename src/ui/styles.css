@@ -427,6 +427,7 @@
   color: var(--ss-primary);
   text-decoration: none;
   letter-spacing: var(--ss-tracking-wide);
+  white-space: nowrap;
 }
 
 .global-nav {
