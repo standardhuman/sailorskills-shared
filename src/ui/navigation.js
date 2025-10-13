@@ -4,7 +4,8 @@
  */
 
 /**
- * Create standardized global navigation header
+ * Create standardized global navigation header (Tier 2 - Middle Navigation)
+ * Displays main service links: DASHBOARD | BILLING | OPERATIONS | INVENTORY | VIDEO | ESTIMATOR
  * @param {Object} options - Navigation options
  * @param {string} options.currentPage - Current active page ('dashboard'|'billing'|'operations'|'customers'|'inventory'|'video'|'estimator')
  * @param {Function} [options.onLogout] - Optional logout handler
@@ -68,7 +69,7 @@ export function createGlobalNav(options = {}) {
 }
 
 /**
- * Create breadcrumb trail
+ * Create breadcrumb trail (Tier 1 - Top Navigation)
  * @param {Array} breadcrumbs - Array of breadcrumb objects {label, url}
  * @returns {string} HTML string for breadcrumb trail
  */
@@ -89,30 +90,66 @@ export function createBreadcrumb(breadcrumbs) {
     }).join('\n        ');
 
     return `
-    <!-- Breadcrumb -->
+    <!-- Breadcrumb (Tier 1) -->
     <div class="breadcrumb">
         ${items}
     </div>`;
 }
 
 /**
+ * Create sub-navigation for service-specific pages (Tier 3 - Bottom Navigation)
+ * @param {Object} options - Sub-navigation options
+ * @param {Array} options.subPages - Array of sub-page objects {id, label, url}
+ * @param {string} options.currentSubPage - Current active sub-page ID
+ * @returns {string} HTML string for sub-navigation
+ */
+export function createSubNav(options = {}) {
+    const { subPages, currentSubPage } = options;
+
+    if (!subPages || subPages.length === 0) {
+        return '';
+    }
+
+    const navItems = subPages.map(page => {
+        const activeClass = page.id === currentSubPage ? ' class="active"' : '';
+        return `<a href="${page.url}"${activeClass}>${page.label}</a>`;
+    }).join('\n                ');
+
+    return `
+    <!-- Sub-Navigation (Tier 3) -->
+    <nav class="sub-nav">
+        <div class="sub-nav-container">
+            ${navItems}
+        </div>
+    </nav>`;
+}
+
+/**
  * Inject navigation into DOM
+ * THREE-TIER NAVIGATION SYSTEM:
+ * - Tier 1 (Top): Breadcrumb trail
+ * - Tier 2 (Middle): Main service navigation (DASHBOARD, BILLING, OPERATIONS, etc.)
+ * - Tier 3 (Bottom): Service-specific sub-pages
+ *
  * @param {Object} options - Navigation options
- * @param {string} options.currentPage - Current active page
- * @param {Array} options.breadcrumbs - Breadcrumb trail
+ * @param {string} options.currentPage - Current active page (main service)
+ * @param {Array} options.breadcrumbs - Breadcrumb trail for Tier 1
+ * @param {Array} [options.subPages] - Sub-pages for Tier 3 (service-specific pages)
+ * @param {string} [options.currentSubPage] - Current active sub-page ID
  * @param {Function} [options.onLogout] - Optional logout handler
  */
 export function injectNavigation(options = {}) {
-    const { currentPage, breadcrumbs, onLogout } = options;
+    const { currentPage, breadcrumbs, subPages, currentSubPage, onLogout } = options;
 
-    // Create navigation HTML
+    // Create navigation HTML for all three tiers
     const navHTML = createGlobalNav({ currentPage, onLogout });
     const breadcrumbHTML = breadcrumbs ? createBreadcrumb(breadcrumbs) : '';
+    const subNavHTML = subPages ? createSubNav({ subPages, currentSubPage }) : '';
 
     // Inject at the beginning of body
     const body = document.body;
     const navContainer = document.createElement('div');
-    navContainer.innerHTML = navHTML + breadcrumbHTML;
+    navContainer.innerHTML = navHTML + breadcrumbHTML + subNavHTML;
 
     // Insert before first child
     while (navContainer.firstChild) {
@@ -122,15 +159,32 @@ export function injectNavigation(options = {}) {
 
 /**
  * Initialize navigation for a page
- * Usage:
+ * THREE-TIER NAVIGATION SYSTEM
+ *
+ * Usage Example:
  * import { initNavigation } from '@sailorskills/shared/ui/navigation';
+ *
  * initNavigation({
- *   currentPage: 'inventory',
+ *   // Tier 2: Main service navigation
+ *   currentPage: 'dashboard',
+ *
+ *   // Tier 1: Breadcrumb trail
  *   breadcrumbs: [
  *     { label: 'Home', url: 'https://www.sailorskills.com/' },
- *     { label: 'Dashboard', url: 'https://sailorskills-dashboard.vercel.app' },
- *     { label: 'Inventory' }
- *   ]
+ *     { label: 'Admin', url: 'https://sailorskills-dashboard.vercel.app' },
+ *     { label: 'Dashboard' }
+ *   ],
+ *
+ *   // Tier 3: Service-specific sub-pages (OPTIONAL)
+ *   subPages: [
+ *     { id: 'dashboard', label: 'Dashboard', url: '/dashboard.html' },
+ *     { id: 'boats', label: 'Boats & History', url: '/boats.html' },
+ *     { id: 'packing', label: 'Packing Lists', url: '/packing.html' },
+ *     { id: 'logs', label: 'Service Logs', url: '/logs.html' },
+ *     { id: 'schedule', label: 'Schedule', url: '/schedule.html' },
+ *     { id: 'alerts', label: 'Paint Alerts', url: '/alerts.html' }
+ *   ],
+ *   currentSubPage: 'dashboard'
  * });
  */
 export function initNavigation(options = {}) {
@@ -146,6 +200,7 @@ export function initNavigation(options = {}) {
 export default {
     createGlobalNav,
     createBreadcrumb,
+    createSubNav,
     injectNavigation,
     initNavigation
 };

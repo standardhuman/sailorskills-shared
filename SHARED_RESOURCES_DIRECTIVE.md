@@ -1,22 +1,25 @@
 # Sailor Skills Shared Resources & Design System Directive
 
-**Version:** 1.0
-**Last Updated:** 2025-10-04
+**Version:** 2.0
+**Last Updated:** 2025-10-13
 **Status:** Official Standard
 **Applies To:** All Sailor Skills microservices
+
+⚠️ **IMPORTANT**: This directive **COMPLETELY REPLACES** all previous navigation and integration directives. If you find conflicting information in other documents, this directive takes precedence.
 
 ---
 
 ## Table of Contents
 
 1. [Purpose](#purpose)
-2. [Design System Standards](#design-system-standards)
-3. [Integration Requirements](#integration-requirements)
-4. [Resource Governance](#resource-governance)
-5. [File Structure & Paths](#file-structure--paths)
-6. [Development Workflow](#development-workflow)
-7. [Compliance & Testing](#compliance--testing)
-8. [Service-Specific Guidelines](#service-specific-guidelines)
+2. [Three-Tier Navigation System](#three-tier-navigation-system)
+3. [Design System Standards](#design-system-standards)
+4. [Integration Requirements](#integration-requirements)
+5. [Resource Governance](#resource-governance)
+6. [File Structure & Paths](#file-structure--paths)
+7. [Development Workflow](#development-workflow)
+8. [Compliance & Testing](#compliance--testing)
+9. [Service-Specific Guidelines](#service-specific-guidelines)
 
 ---
 
@@ -29,6 +32,117 @@ This directive establishes the **official standards** for shared resource usage 
 - **Maintainability**: Update once, deploy everywhere
 - **Brand Identity**: Unified Sailor Skills experience
 - **Quality**: Consistent UX patterns and accessibility
+
+---
+
+## Three-Tier Navigation System
+
+### Overview
+
+All internal Sailor Skills services use a **three-tier navigation structure**:
+
+```
+┌─────────────────────────────────────────────────────────┐
+│ Tier 1: Breadcrumb Trail                               │
+│ Home › Admin › Dashboard                                │
+└─────────────────────────────────────────────────────────┘
+┌─────────────────────────────────────────────────────────┐
+│ Tier 2: Main Service Navigation                        │
+│ DASHBOARD | BILLING | OPERATIONS | INVENTORY |         │
+│ VIDEO | ESTIMATOR                                       │
+└─────────────────────────────────────────────────────────┘
+┌─────────────────────────────────────────────────────────┐
+│ Tier 3: Service-Specific Sub-Pages (Optional)          │
+│ Dashboard | Boats & History | Packing Lists |          │
+│ Service Logs | Schedule | Paint Alerts                  │
+└─────────────────────────────────────────────────────────┘
+```
+
+### Tier 1: Breadcrumb Trail
+
+**Purpose**: Shows hierarchical location within the site
+**Style**: Light gray background, blue links
+**Example**: `Home › Admin › Dashboard`
+
+**Implementation**:
+```javascript
+breadcrumbs: [
+  { label: 'Home', url: 'https://www.sailorskills.com/' },
+  { label: 'Admin', url: 'https://sailorskills-dashboard.vercel.app' },
+  { label: 'Dashboard' } // Current page - no URL
+]
+```
+
+### Tier 2: Main Service Navigation
+
+**Purpose**: Navigate between major Sailor Skills services
+**Style**: White background, blue text, uppercase
+**Services**: DASHBOARD | BILLING | OPERATIONS | INVENTORY | VIDEO | ESTIMATOR
+
+**Official Service Names** (Use these exact labels):
+- **DASHBOARD** (not "Admin")
+- **BILLING**
+- **OPERATIONS** (not "Schedule")
+- **INVENTORY**
+- **VIDEO**
+- **ESTIMATOR**
+
+**Implementation**:
+```javascript
+currentPage: 'dashboard' // Highlights the active service
+```
+
+### Tier 3: Service-Specific Sub-Pages
+
+**Purpose**: Navigate between pages within a single service
+**Style**: Dark blue background, white text
+**When to use**: Services with multiple related pages
+
+**Example** (Dashboard service):
+```javascript
+subPages: [
+  { id: 'dashboard', label: 'Dashboard', url: '/dashboard.html' },
+  { id: 'boats', label: 'Boats & History', url: '/boats.html' },
+  { id: 'packing', label: 'Packing Lists', url: '/packing.html' },
+  { id: 'logs', label: 'Service Logs', url: '/logs.html' },
+  { id: 'schedule', label: 'Schedule', url: '/schedule.html' },
+  { id: 'alerts', label: 'Paint Alerts', url: '/alerts.html' }
+],
+currentSubPage: 'dashboard' // Highlights the active sub-page
+```
+
+**Guidelines**:
+- ✅ Use for services with 3+ related pages
+- ✅ Keep labels concise (1-3 words)
+- ✅ Use consistent terminology across services
+- ❌ Don't duplicate main navigation items
+- ❌ Don't nest more than one level deep
+
+### Complete Integration Example
+
+```javascript
+import { initNavigation } from '/shared/src/ui/navigation.js';
+
+initNavigation({
+  // Tier 2: Main service (REQUIRED)
+  currentPage: 'dashboard',
+
+  // Tier 1: Breadcrumb trail (REQUIRED)
+  breadcrumbs: [
+    { label: 'Home', url: 'https://www.sailorskills.com/' },
+    { label: 'Admin', url: 'https://sailorskills-dashboard.vercel.app' },
+    { label: 'Dashboard' }
+  ],
+
+  // Tier 3: Sub-pages (OPTIONAL - only if service has multiple pages)
+  subPages: [
+    { id: 'dashboard', label: 'Dashboard', url: '/dashboard.html' },
+    { id: 'boats', label: 'Boats & History', url: '/boats.html' },
+    { id: 'packing', label: 'Packing Lists', url: '/packing.html' }
+  ],
+  currentSubPage: 'dashboard'
+});
+```
 
 ---
 
@@ -104,14 +218,6 @@ font-family: var(--ss-font-primary); /* Montserrat, Arial, sans-serif */
 --ss-text-hero: 6.25rem        /* 100px - Hero (desktop) */
 ```
 
-**Font Weights**:
-```css
---ss-weight-normal: 400        /* Body text */
---ss-weight-medium: 500        /* Emphasis */
---ss-weight-semibold: 600      /* Subheadings */
---ss-weight-bold: 700          /* Headers */
-```
-
 **Typography Rules:**
 - ✅ Use Montserrat for all text
 - ✅ Use design token font sizes
@@ -158,39 +264,6 @@ border-radius: 0.5rem;
 --ss-border-width-thick: 2px   /* Emphasized borders */
 ```
 
-**Exception:** Minimal rounding (4px) may be used for very specific UI components (e.g., badges, tags) with explicit approval.
-
-### Shadows
-
-**Minimal Shadow Usage** (Flat Design):
-```css
---ss-shadow-sm: 0 2px 4px rgba(0, 0, 0, 0.05)    /* Subtle depth */
---ss-shadow-md: 0 4px 12px rgba(0, 0, 0, 0.1)    /* Cards */
---ss-shadow-lg: 0 20px 60px rgba(0, 0, 0, 0.3)   /* Modals */
-```
-
-**Shadow Rules:**
-- ✅ Use sparingly for depth hierarchy
-- ✅ Prefer borders over shadows
-- ❌ No heavy drop shadows
-- ❌ No glow effects
-
-### Layout
-
-**Container Widths**:
-```css
---ss-max-width-sm: 400px       /* Forms, modals */
---ss-max-width-md: 800px       /* Content sections */
---ss-max-width-lg: 980px       /* Main content */
---ss-max-width-xl: 1200px      /* Wide layouts */
---ss-max-width-2xl: 1600px     /* Dashboard grids */
-```
-
-**Navigation Height**:
-```css
---ss-nav-height: 69px          /* Global navigation */
-```
-
 ---
 
 ## Integration Requirements
@@ -214,70 +287,43 @@ border-radius: 0.5rem;
 <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700&display=swap" rel="stylesheet">
 ```
 
-#### 4. Global Navigation (REQUIRED for internal services)
+#### 4. Three-Tier Navigation (REQUIRED for internal services)
 ```html
 <script type="module">
   import { initNavigation } from '/shared/src/ui/navigation.js';
 
   initNavigation({
-    currentPage: 'your-service-id',  // Required: 'admin', 'portal', 'billing', 'inventory', 'schedule'
-    breadcrumbs: [                    // Optional but recommended
+    currentPage: 'dashboard',  // Required: Main service
+    breadcrumbs: [             // Required: Tier 1
       { label: 'Home', url: 'https://www.sailorskills.com/' },
-      { label: 'Admin', url: 'https://sailorskills-admin.vercel.app' },
-      { label: 'Current Page' }
-    ]
+      { label: 'Admin', url: 'https://sailorskills-dashboard.vercel.app' },
+      { label: 'Dashboard' }
+    ],
+    subPages: [                // Optional: Tier 3 (if service has multiple pages)
+      { id: 'dashboard', label: 'Dashboard', url: '/dashboard.html' },
+      { id: 'boats', label: 'Boats & History', url: '/boats.html' }
+    ],
+    currentSubPage: 'dashboard'
   });
 </script>
 ```
 
-**Exception:** Public-facing services (like Estimator) do NOT require global navigation integration.
-
-#### 5. Hero Headers (PUBLIC-FACING SERVICES ONLY)
-
-**IMPORTANT:** Hero headers are ONLY for public-facing services like Estimator. Internal services (Admin, Portal, Billing, Inventory, Schedule) MUST NOT include hero headers.
-
-```html
-<!-- ✅ CORRECT - Estimator (public-facing) -->
-<div class="hero-header">
-  <h1>Get Your Diving Estimate</h1>
-</div>
-
-<!-- ❌ WRONG - Internal services should NOT have hero headers -->
-<div id="hero-header-container"></div>  <!-- Remove this from internal services -->
-```
-
-**Rule:** If it has global navigation, it should NOT have a hero header. If it has a hero header, it should NOT have global navigation.
-
-### Navigation Integration Checklist
-
-Before deploying any **internal** service, ensure:
-
-- [ ] Montserrat font loaded in `<head>`
-- [ ] `/shared/src/ui/design-tokens.css` imported
-- [ ] `/shared/src/ui/styles.css` imported
-- [ ] `initNavigation()` called with correct `currentPage` value
-- [ ] Breadcrumbs configured appropriately
-- [ ] All navigation links work correctly
-- [ ] Logout functionality tested
-- [ ] Active page state correctly highlighted
-- [ ] Navigation displays on all pages in the service
-
-**Note:** Public-facing services (Estimator) skip navigation-related items.
+**Exception:** Public-facing services (like Estimator) do NOT require navigation integration.
 
 ### Service URLs & IDs
 
 **Official Service Registry:**
 
-| Service ID | Name | Production URL | Local Dev | Type |
-|------------|------|----------------|-----------|------|
-| `admin` | Admin Dashboard | https://sailorskills-admin.vercel.app | localhost:8001 | Internal |
-| `portal` | Service Portal | https://sailorskills-portal.vercel.app | localhost:5174 | Internal |
-| `billing` | Billing | https://sailorskills-billing.vercel.app | localhost:5173 | Internal |
-| `inventory` | Inventory | https://sailorskills-inventory.vercel.app | localhost:5176 | Internal |
-| `schedule` | Schedule | https://sailorskills-schedule.vercel.app | localhost:3000 | Internal |
-| `estimator` | Diving Estimator | https://sailorskills-estimator.vercel.app | localhost:5175 | **Public** |
+| Service ID | Name | Production URL | Type |
+|------------|------|----------------|------|
+| `dashboard` | Dashboard | https://sailorskills-dashboard.vercel.app | Internal |
+| `billing` | Billing | https://sailorskills-billing.vercel.app | Internal |
+| `operations` | Operations | https://sailorskills-operations.vercel.app | Internal |
+| `inventory` | Inventory | https://sailorskills-inventory.vercel.app | Internal |
+| `video` | Video | https://sailorskills-video.vercel.app | Internal |
+| `estimator` | Estimator | https://sailorskills-estimator.vercel.app | **Public** |
 
-**Use these exact IDs** when calling `initNavigation({ currentPage: 'id' })` (internal services only).
+**Use these exact IDs** when calling `initNavigation({ currentPage: 'id' })`.
 
 ---
 
@@ -294,7 +340,6 @@ Before deploying any **internal** service, ensure:
 - **Navigation components**
 - **Authentication utilities**
 - **API client wrappers** (Supabase, Stripe)
-- **Reusable hooks** (if using React)
 
 **❌ KEEP in Service Repos:**
 
@@ -305,51 +350,6 @@ Before deploying any **internal** service, ensure:
 - **Service-specific API endpoints**
 - **Service-specific state management**
 - **One-off components** unlikely to be reused
-
-### Decision Framework
-
-Before adding to shared package, ask:
-
-1. **Is it used by 2+ services?** (or will be soon)
-2. **Is it generic enough to be reusable?**
-3. **Does it enforce design consistency?**
-4. **Will centralizing it reduce bugs?**
-
-If **YES to 2+ questions** → Add to shared
-If **NO to most questions** → Keep in service repo
-
-### Examples
-
-```javascript
-// ✅ GOOD - Belongs in shared
-export function createButton({ variant, onClick, text }) { ... }
-export const BUSINESS = { MINIMUM_SERVICE_FEE: 150 };
-export function formatCurrency(amount) { ... }
-export function validateEmail(email) { ... }
-
-// ❌ BAD - Belongs in service repos
-export function calculateDivingPrice(depth, time, hull) { ... }
-export function InventoryDashboard() { ... }
-export const DIVING_SERVICES = ['hull-cleaning', 'zincs', ...];
-```
-
-### Adding New Shared Components
-
-**Process:**
-
-1. **Propose**: Open discussion with team
-2. **Design**: Ensure it follows design system
-3. **Build**: Create in shared package
-4. **Test**: Test in at least 1 service
-5. **Document**: Add to README with examples
-6. **Version**: Bump version (semver)
-7. **Deploy**: Update services that need it
-
-**Required Documentation:**
-- Purpose and use cases
-- API reference with examples
-- CSS classes and styling
-- Accessibility notes
 
 ---
 
@@ -363,25 +363,23 @@ sailorskills-shared/
 │   ├── ui/
 │   │   ├── design-tokens.css    # CSS variables (REQUIRED)
 │   │   ├── styles.css           # Global styles & navigation
-│   │   ├── navigation.js        # Navigation component
+│   │   ├── navigation.js        # Three-tier navigation component
 │   │   └── components.js        # Reusable UI components
 │   ├── auth/
 │   │   ├── supabase-auth.js     # Supabase auth wrapper
 │   │   └── simple-auth.js       # Simple password auth
-│   ├── config/
-│   │   └── constants.js         # Shared constants
-│   └── index.js                 # Main export
-├── SHARED_RESOURCES_DIRECTIVE.md  # This file
-├── NAVIGATION_INTEGRATION.md      # Navigation guide
+│   └── config/
+│       └── constants.js         # Shared constants
+├── SHARED_RESOURCES_DIRECTIVE.md  # This file (Version 2.0)
+├── NAVIGATION_INTEGRATION.md      # Integration guide
 ├── README.md                      # Package documentation
 └── package.json
 ```
 
 ### Path Reference Guidelines
 
-**CRITICAL: Path formats vary by server type**
+**CRITICAL: Always use absolute paths from web root**
 
-#### For Vite-based Services (Portal, Inventory, Estimator, Billing, Schedule)
 ```html
 <!-- ✅ CORRECT - Absolute paths from root -->
 <link rel="stylesheet" href="/shared/src/ui/design-tokens.css">
@@ -391,24 +389,10 @@ sailorskills-shared/
 </script>
 ```
 
-#### For Python HTTP Server (Admin)
-```html
-<!-- ✅ CORRECT - Absolute paths from root -->
-<link rel="stylesheet" href="/shared/src/ui/design-tokens.css">
-<link rel="stylesheet" href="/shared/src/ui/styles.css">
-<script type="module">
-  import { initNavigation } from '/shared/src/ui/navigation.js';
-</script>
-```
-
-#### What NOT to Do
 ```html
 <!-- ❌ WRONG - Relative paths may break -->
 <link rel="stylesheet" href="./shared/src/ui/styles.css">
 <link rel="stylesheet" href="../shared/src/ui/styles.css">
-
-<!-- ❌ WRONG - Wrong path structure -->
-<link rel="stylesheet" href="../sailorskills-shared/src/ui/styles.css">
 ```
 
 **Rule of Thumb:** Always use `/shared/` (absolute path from web root).
@@ -446,70 +430,21 @@ git push
 4. **Update submodules** in all affected services
 5. **Test in each service** before deploying
 
-**Important:**
-- Always test shared changes in a real service first
-- Use semantic versioning for breaking changes
-- Document changes in README
-
-### Testing Changes Locally
-
-```bash
-# 1. Make changes in shared repo
-cd sailorskills-shared
-# ... edit files ...
-git add .
-git commit -m "Add new button variant"
-git push
-
-# 2. Update in service repo
-cd ../sailorskills-inventory/shared
-git pull origin main
-cd ..
-
-# 3. Test locally
-npm run dev
-
-# 4. If good, commit the submodule update
-git add shared
-git commit -m "Update shared package - new button variant"
-git push
-```
-
-### Version Management
-
-**Semantic Versioning (SemVer):**
-
-- **Major (1.0.0 → 2.0.0)**: Breaking changes (renamed functions, removed features)
-- **Minor (1.0.0 → 1.1.0)**: New features, backwards compatible
-- **Patch (1.0.0 → 1.0.1)**: Bug fixes, no new features
-
-**Update `package.json` version** when making significant changes.
-
-### Breaking Changes Policy
-
-**If introducing a breaking change:**
-
-1. **Announce** to team in advance
-2. **Document** the migration path
-3. **Bump major version**
-4. **Update all services** before deploying
-5. **Test thoroughly** in all services
-
 ---
 
 ## Compliance & Testing
 
 ### Navigation Compliance Tests
 
-**All services MUST pass** the Playwright navigation compliance tests.
+**All internal services MUST pass** the Playwright navigation compliance tests.
 
 **Test Coverage:**
-- Global navigation header loads
-- SAILOR SKILLS logo present and links correctly
-- All 6 navigation links present
+- Global navigation header loads (Tier 2)
+- All navigation links present and correct
 - Active state correctly highlights current page
 - Logout button visible and functional
-- Breadcrumb navigation (if applicable)
+- Breadcrumb navigation (Tier 1)
+- Sub-navigation (Tier 3) if applicable
 - Design tokens properly applied
 
 **Running Tests:**
@@ -518,43 +453,7 @@ cd sailorskills-shared
 npx playwright test tests/navigation-compliance.spec.js
 ```
 
-**Current Status:**
-- ✅ Admin: 7/7 passing (100%)
-- ✅ Inventory: 7/7 passing (100%)
-- ✅ Schedule: 5/7 passing (71%)
-- ⚠️ Portal: Not yet tested
-- ⚠️ Billing: Not yet tested
-- N/A Estimator: Exempt (public-facing)
-
 **Requirement:** All **internal** services must achieve **100% pass rate** before production deployment.
-
-### Design Token Usage Validation
-
-**How to Verify:**
-
-1. **Inspect elements** in browser dev tools
-2. **Check computed styles** use CSS variables (e.g., `var(--ss-primary)`)
-3. **Search codebase** for hardcoded colors (e.g., `#345475`)
-4. **Replace hardcoded values** with design tokens
-
-**Common Violations:**
-```css
-/* ❌ WRONG */
-.button {
-  background: #345475;
-  color: #181818;
-  padding: 16px;
-  border-radius: 8px;
-}
-
-/* ✅ CORRECT */
-.button {
-  background: var(--ss-primary);
-  color: var(--ss-text-dark);
-  padding: var(--ss-space-md);
-  border-radius: var(--ss-radius-none);
-}
-```
 
 ### Pre-Deployment Checklist
 
@@ -562,7 +461,7 @@ Before deploying any service:
 
 - [ ] All shared CSS files imported
 - [ ] Montserrat font loaded
-- [ ] Navigation initialized correctly
+- [ ] Three-tier navigation initialized correctly
 - [ ] Playwright tests passing (if applicable)
 - [ ] No hardcoded colors (use CSS variables)
 - [ ] No custom fonts (use Montserrat)
@@ -570,110 +469,69 @@ Before deploying any service:
 - [ ] Shared submodule up to date
 - [ ] Cross-service navigation tested
 - [ ] Logout functionality verified
+- [ ] Sub-navigation configured (if multiple pages)
 
 ---
 
 ## Service-Specific Guidelines
 
-### Admin Service
-
-**Technology:** Python HTTP Server
-**Port:** 8001 (dev)
-**Deployment:** Vercel
-
-**Requirements:**
-- Uses `/shared/` absolute paths
-- Dashboard.html integrates navigation
-- Simple structure (no build process)
-
-**Integration:**
-```html
-<link rel="stylesheet" href="/shared/src/ui/design-tokens.css">
-<link rel="stylesheet" href="/shared/src/ui/styles.css">
-<script type="module">
-  import { initNavigation } from '/shared/src/ui/navigation.js';
-  initNavigation({
-    currentPage: 'admin',
-    breadcrumbs: [
-      { label: 'Home', url: 'https://www.sailorskills.com/' },
-      { label: 'Admin' }
-    ]
-  });
-</script>
-```
-
-### Portal Service
+### Dashboard Service
 
 **Technology:** Vite
-**Port:** 5174 (dev)
-**Deployment:** Vercel
+**Service ID:** `dashboard`
+**Sub-Pages:** Yes (Dashboard, Boats & History, Packing Lists, etc.)
 
-**Requirements:**
-- Uses `/shared/` absolute paths
-- Vite handles module resolution
-- Service management focus
-
-**Status:** ⚠️ Needs navigation integration
-
-### Billing Service
-
-**Technology:** Vite
-**Port:** 5173 (dev)
-**Deployment:** Vercel
-
-**Requirements:**
-- Uses `/shared/` absolute paths
-- Partial integration (admin.html only)
-
-**Status:** ⚠️ Needs full navigation integration
-
-### Inventory Service
-
-**Technology:** Vite
-**Port:** 5176 (dev)
-**Deployment:** Vercel
-
-**Requirements:**
-- Uses `/shared/` absolute paths
-- Has authentication (requires bypass in tests)
-- Multiple pages (inventory.html, ai-assistant.html)
-
-**Authentication Note:**
+**Navigation Example:**
 ```javascript
-// For testing: Bypass auth by setting session
-localStorage.setItem('inventory_auth_session', JSON.stringify({
-  authenticated: true,
-  expires: Date.now() + (8 * 60 * 60 * 1000)
-}));
+initNavigation({
+  currentPage: 'dashboard',
+  breadcrumbs: [
+    { label: 'Home', url: 'https://www.sailorskills.com/' },
+    { label: 'Admin', url: 'https://sailorskills-dashboard.vercel.app' },
+    { label: 'Dashboard' }
+  ],
+  subPages: [
+    { id: 'dashboard', label: 'Dashboard', url: '/dashboard.html' },
+    { id: 'boats', label: 'Boats & History', url: '/boats.html' },
+    { id: 'packing', label: 'Packing Lists', url: '/packing.html' },
+    { id: 'logs', label: 'Service Logs', url: '/logs.html' },
+    { id: 'schedule', label: 'Schedule', url: '/schedule.html' },
+    { id: 'alerts', label: 'Paint Alerts', url: '/alerts.html' }
+  ],
+  currentSubPage: 'dashboard'
+});
 ```
 
-**Status:** ✅ Fully integrated
-
-### Schedule Service
+### Operations Service
 
 **Technology:** Node.js/Express
-**Port:** 3000 (dev)
-**Deployment:** Vercel
+**Service ID:** `operations`
+**Note:** Previously called "Schedule"
 
-**Requirements:**
-- Uses `/shared/` absolute paths
-- Calendar/scheduling focus
-
-**Status:** ✅ Partially integrated (needs breadcrumb fixes)
+**Navigation Example:**
+```javascript
+initNavigation({
+  currentPage: 'operations',
+  breadcrumbs: [
+    { label: 'Home', url: 'https://www.sailorskills.com/' },
+    { label: 'Admin', url: 'https://sailorskills-dashboard.vercel.app' },
+    { label: 'Operations' }
+  ]
+  // Add subPages if service has multiple pages
+});
+```
 
 ### Estimator Service
 
 **Technology:** Vite
-**Port:** 5175 (dev)
-**Deployment:** Vercel
+**Service ID:** `estimator`
 **Type:** Public-facing
 
 **Requirements:**
 - Uses `/shared/` absolute paths for design tokens and styles
 - **NO navigation integration required** (public-facing)
 - **NO breadcrumbs required** (public-facing)
-- **YES to hero headers** (public-facing service - hero headers are appropriate)
-- Diving service calculator
+- **Hero headers allowed and encouraged** (public-facing service)
 
 **Integration:**
 ```html
@@ -689,7 +547,6 @@ localStorage.setItem('inventory_auth_session', JSON.stringify({
 ```
 
 **Status:** ✅ Exempt from navigation requirements (public-facing)
-**Status:** ✅ Hero headers allowed and encouraged (public-facing)
 
 ---
 
@@ -698,6 +555,7 @@ localStorage.setItem('inventory_auth_session', JSON.stringify({
 ### This Directive is Official
 
 - **Status:** Mandatory for all Sailor Skills services
+- **Version:** 2.0 (Supersedes all previous versions)
 - **Authority:** Brian (Product Owner)
 - **Updates:** Any changes require team review
 - **Questions:** Open GitHub issue or discuss with team
@@ -715,40 +573,33 @@ localStorage.setItem('inventory_auth_session', JSON.stringify({
    - **Medium:** Non-compliance (hardcoded values)
    - **Low:** Optimization opportunities
 
-### Requesting Exceptions
-
-**If you need to deviate from this directive:**
-
-1. **Document** the reason
-2. **Propose** alternative approach
-3. **Get approval** from team lead
-4. **Update** this directive if exception becomes standard
-
 ---
 
 ## Resources
 
 ### Documentation
 - [README.md](./README.md) - Package API reference
-- [NAVIGATION_INTEGRATION.md](./NAVIGATION_INTEGRATION.md) - Navigation setup guide
+- [NAVIGATION_INTEGRATION.md](./NAVIGATION_INTEGRATION.md) - Three-tier navigation guide with AI agent prompt
 - [design-tokens.css](./src/ui/design-tokens.css) - All CSS variables
 
 ### Testing
 - [Navigation Tests](./tests/navigation-compliance.spec.js) - Playwright test suite
 
-### Examples
-- **Admin Service** - Fully integrated with Python server
-- **Inventory Service** - Fully integrated with auth and Vite
-- **Schedule Service** - Partially integrated
-
 ### Support
 - **GitHub Issues:** https://github.com/standardhuman/sailorskills-shared/issues
 - **Team Discussion:** Check with team lead
-- **Documentation Updates:** Submit PR to this file
 
 ---
 
 ## Changelog
+
+### Version 2.0 (2025-10-13)
+- **MAJOR UPDATE**: Complete three-tier navigation system
+- Added Tier 3 (sub-navigation) for service-specific pages
+- Updated service names (DASHBOARD, OPERATIONS)
+- Complete rewrite of navigation documentation
+- Supersedes all previous navigation directives
+- Added comprehensive examples for all tiers
 
 ### Version 1.0 (2025-10-04)
 - Initial release of Shared Resources Directive
