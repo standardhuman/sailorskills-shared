@@ -496,7 +496,7 @@
 
 .top-nav {
   background: var(--ss-white);
-  padding: 16px 40px;
+  padding: 10px 40px;
   border-bottom: var(--ss-border-width) solid var(--ss-border-subtle);
   display: flex;
   justify-content: space-between;
@@ -640,7 +640,7 @@
 /* Responsive navigation */
 @media (max-width: 768px) {
   .top-nav {
-    padding: 12px 20px;
+    padding: 8px 20px;
     flex-direction: row;
     gap: 15px;
   }

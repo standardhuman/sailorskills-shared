@@ -400,8 +400,9 @@
   font-size: var(--ss-text-xs);
 }
 
-/* ===== GLOBAL NAVIGATION ===== */
-/* Standardized navigation header for all microservices */
+/* ===== GLOBAL NAVIGATION (Tier 2) ===== */
+/* Standardized main service navigation for all microservices */
+/* Displays: DASHBOARD | BILLING | OPERATIONS | INVENTORY | VIDEO | ESTIMATOR */
 
 .global-header {
   background-color: var(--ss-white);
@@ -426,6 +427,7 @@
   color: var(--ss-primary);
   text-decoration: none;
   letter-spacing: var(--ss-tracking-wide);
+  white-space: nowrap;
 }
 
 .global-nav {
@@ -447,6 +449,7 @@
   text-transform: uppercase;
   padding: 8px 16px;
   border-radius: 6px;
+  white-space: nowrap;
 }
 
 .global-nav a:hover {
@@ -488,33 +491,91 @@
   color: var(--ss-white);
 }
 
-/* ===== BREADCRUMB ===== */
-.breadcrumb {
-  background: var(--ss-bg-light);
-  padding: 12px 40px;
+/* ===== TOP NAVIGATION (Tier 1) ===== */
+/* SAILOR SKILLS logo and logout link */
+
+.top-nav {
+  background: var(--ss-white);
+  padding: 10px 40px;
   border-bottom: var(--ss-border-width) solid var(--ss-border-subtle);
-  font-size: var(--ss-text-sm);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  max-width: var(--ss-max-width-2xl);
+  margin: 0 auto;
 }
 
-.breadcrumb a {
-  color: var(--ss-primary-light);
+.top-nav .nav-logo {
+  font-family: var(--ss-font-primary);
+  font-size: var(--ss-text-xl);
+  font-weight: var(--ss-weight-bold);
+  color: var(--ss-primary);
   text-decoration: none;
+  letter-spacing: var(--ss-tracking-wide);
+  white-space: nowrap;
   transition: color var(--ss-transition-fast);
 }
 
-.breadcrumb a:hover {
-  color: var(--ss-primary);
-  text-decoration: underline;
+.top-nav .nav-logo:hover {
+  color: var(--ss-primary-hover);
 }
 
-.breadcrumb .separator {
-  margin: 0 var(--ss-space-sm);
-  color: var(--ss-text-medium);
-}
-
-.breadcrumb .current {
-  color: var(--ss-primary);
+.top-nav .logout-link {
+  font-family: var(--ss-font-primary);
+  font-size: var(--ss-text-sm);
   font-weight: var(--ss-weight-medium);
+  color: var(--ss-primary-light);
+  text-decoration: none;
+  padding: 0;
+  transition: color var(--ss-transition-fast);
+}
+
+.top-nav .logout-link:hover {
+  color: var(--ss-primary);
+}
+
+/* ===== SUB-NAVIGATION (Tier 3) ===== */
+/* Service-specific page navigation */
+
+.sub-nav {
+  background-color: var(--ss-primary) !important;
+  border-bottom: var(--ss-border-width-thick) solid var(--ss-border-dark);
+  padding: 0;
+}
+
+.sub-nav-container {
+  max-width: var(--ss-max-width-2xl);
+  margin: 0 auto;
+  padding: 0 40px;
+  display: flex;
+  gap: 0;
+  align-items: center;
+  justify-content: center;
+}
+
+.sub-nav a {
+  font-family: var(--ss-font-primary);
+  font-size: var(--ss-text-sm);
+  color: var(--ss-white);
+  text-decoration: none;
+  transition: all var(--ss-transition-fast);
+  font-weight: var(--ss-weight-medium);
+  padding: 16px 24px;
+  display: inline-block;
+  border-bottom: 3px solid transparent;
+  opacity: 0.85;
+}
+
+.sub-nav a:hover {
+  opacity: 1;
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.sub-nav a.active {
+  opacity: 1;
+  background: rgba(255, 255, 255, 0.15);
+  border-bottom-color: var(--ss-white);
+  font-weight: var(--ss-weight-semibold);
 }
 
 /* ===== HERO HEADER ===== */
@@ -578,6 +639,21 @@
 
 /* Responsive navigation */
 @media (max-width: 768px) {
+  .top-nav {
+    padding: 8px 20px;
+    flex-direction: row;
+    gap: 15px;
+  }
+
+  .top-nav .nav-logo {
+    font-size: var(--ss-text-lg);
+  }
+
+  .top-nav .logout-link {
+    font-size: 12px;
+    padding: 6px 12px;
+  }
+
   .global-nav-container {
     flex-direction: column;
     gap: 20px;
@@ -595,9 +671,16 @@
     padding: 6px 12px;
   }
 
-  .breadcrumb {
-    padding: 10px 20px;
+  .sub-nav-container {
+    padding: 0 20px;
+    flex-wrap: wrap;
+    gap: 0;
+    justify-content: center;
+  }
+
+  .sub-nav a {
     font-size: 12px;
+    padding: 12px 16px;
   }
 
   .hero-service {
