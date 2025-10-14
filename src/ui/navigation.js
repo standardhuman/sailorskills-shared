@@ -8,11 +8,10 @@
  * Displays main service links: DASHBOARD | BILLING | OPERATIONS | INVENTORY | VIDEO | ESTIMATOR
  * @param {Object} options - Navigation options
  * @param {string} options.currentPage - Current active page ('dashboard'|'billing'|'operations'|'customers'|'inventory'|'video'|'estimator')
- * @param {Function} [options.onLogout] - Optional logout handler
  * @returns {string} HTML string for the navigation header
  */
 export function createGlobalNav(options = {}) {
-    const { currentPage, onLogout } = options;
+    const { currentPage } = options;
 
     // Determine if this is a public-facing service or internal service
     // Public services: Estimator only
@@ -54,8 +53,6 @@ export function createGlobalNav(options = {}) {
         return `<a href="${item.url}"${activeClass}>${item.label}</a>`;
     }).join('\n                ');
 
-    const logoutHandler = onLogout ? onLogout : 'window.supabaseAuth?.signOut()';
-
     return `
     <!-- Global Navigation Header -->
     <header class="global-header">
@@ -63,36 +60,24 @@ export function createGlobalNav(options = {}) {
             <nav class="global-nav">
                 ${navHTML}
             </nav>
-            <button class="nav-btn logout-btn" onclick="${logoutHandler}">🔒 Logout</button>
         </div>
     </header>`;
 }
 
 /**
- * Create breadcrumb trail (Tier 1 - Top Navigation)
- * @param {Array} breadcrumbs - Array of breadcrumb objects {label, url}
- * @returns {string} HTML string for breadcrumb trail
+ * Create top navigation bar (Tier 1 - Top Navigation)
+ * Displays SAILOR SKILLS logo on the left and logout link on the right
+ * @param {Function} [onLogout] - Optional logout handler
+ * @returns {string} HTML string for top navigation bar
  */
-export function createBreadcrumb(breadcrumbs) {
-    if (!breadcrumbs || breadcrumbs.length === 0) {
-        return '';
-    }
-
-    const items = breadcrumbs.map((crumb, index) => {
-        const isLast = index === breadcrumbs.length - 1;
-
-        if (isLast) {
-            return `<span class="current">${crumb.label}</span>`;
-        } else {
-            return `<a href="${crumb.url}">${crumb.label}</a>
-        <span class="separator">›</span>`;
-        }
-    }).join('\n        ');
+export function createTopNav(onLogout) {
+    const logoutHandler = onLogout ? onLogout : 'window.supabaseAuth?.signOut()';
 
     return `
-    <!-- Breadcrumb (Tier 1) -->
-    <div class="breadcrumb">
-        ${items}
+    <!-- Top Navigation (Tier 1) -->
+    <div class="top-nav">
+        <a href="https://www.sailorskills.com/" class="nav-logo">SAILOR SKILLS</a>
+        <a href="#" class="logout-link" onclick="${logoutHandler}; return false;">Logout</a>
     </div>`;
 }
 
@@ -126,30 +111,29 @@ export function createSubNav(options = {}) {
 
 /**
  * Inject navigation into DOM
- * THREE-TIER NAVIGATION SYSTEM:
- * - Tier 1 (Top): Breadcrumb trail
+ * TWO-TIER NAVIGATION SYSTEM:
+ * - Tier 1 (Top): SAILOR SKILLS logo and logout link
  * - Tier 2 (Middle): Main service navigation (DASHBOARD, BILLING, OPERATIONS, etc.)
- * - Tier 3 (Bottom): Service-specific sub-pages
+ * - Tier 3 (Bottom): Service-specific sub-pages (optional)
  *
  * @param {Object} options - Navigation options
  * @param {string} options.currentPage - Current active page (main service)
- * @param {Array} options.breadcrumbs - Breadcrumb trail for Tier 1
  * @param {Array} [options.subPages] - Sub-pages for Tier 3 (service-specific pages)
  * @param {string} [options.currentSubPage] - Current active sub-page ID
  * @param {Function} [options.onLogout] - Optional logout handler
  */
 export function injectNavigation(options = {}) {
-    const { currentPage, breadcrumbs, subPages, currentSubPage, onLogout } = options;
+    const { currentPage, subPages, currentSubPage, onLogout } = options;
 
-    // Create navigation HTML for all three tiers
-    const navHTML = createGlobalNav({ currentPage, onLogout });
-    const breadcrumbHTML = breadcrumbs ? createBreadcrumb(breadcrumbs) : '';
+    // Create navigation HTML for all tiers
+    const topNavHTML = createTopNav(onLogout);
+    const navHTML = createGlobalNav({ currentPage });
     const subNavHTML = subPages ? createSubNav({ subPages, currentSubPage }) : '';
 
     // Inject at the beginning of body
     const body = document.body;
     const navContainer = document.createElement('div');
-    navContainer.innerHTML = breadcrumbHTML + navHTML + subNavHTML;
+    navContainer.innerHTML = topNavHTML + navHTML + subNavHTML;
 
     // Insert before first child - keep reference to avoid reversing order
     const referenceNode = body.firstChild;
@@ -160,7 +144,7 @@ export function injectNavigation(options = {}) {
 
 /**
  * Initialize navigation for a page
- * THREE-TIER NAVIGATION SYSTEM
+ * TWO-TIER NAVIGATION SYSTEM (with optional third tier for sub-pages)
  *
  * Usage Example:
  * import { initNavigation } from '@sailorskills/shared/ui/navigation';
@@ -168,13 +152,6 @@ export function injectNavigation(options = {}) {
  * initNavigation({
  *   // Tier 2: Main service navigation
  *   currentPage: 'dashboard',
- *
- *   // Tier 1: Breadcrumb trail
- *   breadcrumbs: [
- *     { label: 'Home', url: 'https://www.sailorskills.com/' },
- *     { label: 'Admin', url: 'https://sailorskills-dashboard.vercel.app' },
- *     { label: 'Dashboard' }
- *   ],
  *
  *   // Tier 3: Service-specific sub-pages (OPTIONAL)
  *   subPages: [
@@ -185,7 +162,10 @@ export function injectNavigation(options = {}) {
  *     { id: 'schedule', label: 'Schedule', url: '/schedule.html' },
  *     { id: 'alerts', label: 'Paint Alerts', url: '/alerts.html' }
  *   ],
- *   currentSubPage: 'dashboard'
+ *   currentSubPage: 'dashboard',
+ *
+ *   // Optional logout handler
+ *   onLogout: () => { /* custom logout logic */ }
  * });
  */
 export function initNavigation(options = {}) {
@@ -200,7 +180,7 @@ export function initNavigation(options = {}) {
 // Default export
 export default {
     createGlobalNav,
-    createBreadcrumb,
+    createTopNav,
     createSubNav,
     injectNavigation,
     initNavigation

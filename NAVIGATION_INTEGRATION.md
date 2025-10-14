@@ -1,6 +1,6 @@
-# Three-Tier Navigation Integration Guide
+# Two-Tier Navigation Integration Guide
 
-**Version:** 2.0
+**Version:** 3.0
 **Last Updated:** 2025-10-13
 **Supersedes:** All previous navigation integration guides
 
@@ -9,8 +9,8 @@
 ## Table of Contents
 
 1. [Quick Start](#quick-start)
-2. [Three-Tier Navigation Overview](#three-tier-navigation-overview)
-3. [Tier 1: Breadcrumb Trail](#tier-1-breadcrumb-trail)
+2. [Two-Tier Navigation Overview](#two-tier-navigation-overview)
+3. [Tier 1: Top Navigation Bar](#tier-1-top-navigation-bar)
 4. [Tier 2: Main Service Navigation](#tier-2-main-service-navigation)
 5. [Tier 3: Sub-Navigation](#tier-3-sub-navigation)
 6. [Complete Integration Examples](#complete-integration-examples)
@@ -50,14 +50,7 @@
       // Tier 2: Main service
       currentPage: 'dashboard',
 
-      // Tier 1: Breadcrumb
-      breadcrumbs: [
-        { label: 'Home', url: 'https://www.sailorskills.com/' },
-        { label: 'Admin', url: 'https://sailorskills-dashboard.vercel.app' },
-        { label: 'Dashboard' }
-      ],
-
-      // Tier 3: Sub-pages
+      // Tier 3: Sub-pages (optional)
       subPages: [
         { id: 'dashboard', label: 'Dashboard', url: '/dashboard.html' },
         { id: 'boats', label: 'Boats & History', url: '/boats.html' }
@@ -77,28 +70,24 @@
   import { initNavigation } from 'https://sailorskills-shared.vercel.app/src/ui/navigation.js';
 
   initNavigation({
-    currentPage: 'billing',
-    breadcrumbs: [
-      { label: 'Home', url: 'https://www.sailorskills.com/' },
-      { label: 'Admin', url: 'https://sailorskills-dashboard.vercel.app' },
-      { label: 'Billing' }
-    ]
+    currentPage: 'billing'
+    // No subPages needed for single-page services
   });
 </script>
 ```
 
 ---
 
-## Three-Tier Navigation Overview
+## Two-Tier Navigation Overview
 
-The Sailor Skills navigation system consists of three tiers:
+The Sailor Skills navigation system consists of two main tiers (plus an optional third tier):
 
 ```
 ┌─────────────────────────────────────────────────────────┐
-│ TIER 1: Breadcrumb Trail                               │
-│ Shows: Home › Admin › Dashboard                         │
-│ Purpose: Hierarchical location                          │
-│ Required: YES (for all internal services)              │
+│ TIER 1: Top Navigation Bar                             │
+│ Shows: SAILOR SKILLS (logo)        Logout (link)       │
+│ Purpose: Branding and primary action (logout)          │
+│ Required: YES (automatic for all services)             │
 └─────────────────────────────────────────────────────────┘
 ┌─────────────────────────────────────────────────────────┐
 │ TIER 2: Main Service Navigation                        │
@@ -118,52 +107,35 @@ The Sailor Skills navigation system consists of three tiers:
 
 ---
 
-## Tier 1: Breadcrumb Trail
+## Tier 1: Top Navigation Bar
 
 ### Purpose
-Shows the user's current location within the site hierarchy.
+Provides consistent branding and primary user action (logout) across all services.
 
 ### Visual Style
-- Light gray background (`#fafafa`)
-- Blue links (`#5a7fa6`)
-- Separator: `›`
-- Small font size
+- White background
+- SAILOR SKILLS logo on the left (bold, blue-gray color)
+- Logout link on the right (blue, styled as button)
+- Clean, minimal design
 
-### Configuration
+### Behavior
+- **Logo**: Clicking the logo returns to the main Sailor Skills website
+- **Logout**: Clicking logout signs the user out (uses Supabase auth by default)
+- **Automatic**: This tier is automatically added - no configuration needed
+
+### Custom Logout Handler
+
+If you need custom logout behavior:
 
 ```javascript
-breadcrumbs: [
-  { label: 'Home', url: 'https://www.sailorskills.com/' },
-  { label: 'Admin', url: 'https://sailorskills-dashboard.vercel.app' },
-  { label: 'Current Page Name' } // Last item has no URL
-]
-```
-
-### Rules
-1. **Always start with "Home"** linking to the main site
-2. **Include parent service** if navigating to a sub-page
-3. **Current page has no URL** (it's the last item)
-4. **Keep labels short** (1-2 words)
-
-### Examples
-
-**Dashboard homepage:**
-```javascript
-breadcrumbs: [
-  { label: 'Home', url: 'https://www.sailorskills.com/' },
-  { label: 'Admin', url: 'https://sailorskills-dashboard.vercel.app' },
-  { label: 'Dashboard' }
-]
-```
-
-**Dashboard sub-page:**
-```javascript
-breadcrumbs: [
-  { label: 'Home', url: 'https://www.sailorskills.com/' },
-  { label: 'Admin', url: 'https://sailorskills-dashboard.vercel.app' },
-  { label: 'Dashboard', url: '/dashboard.html' },
-  { label: 'Boats & History' }
-]
+initNavigation({
+  currentPage: 'dashboard',
+  onLogout: () => {
+    // Your custom logout logic
+    console.log('Logging out...');
+    window.supabaseAuth?.signOut();
+  }
+});
 ```
 
 ---
@@ -284,13 +256,6 @@ currentSubPage: 'dashboard' // Highlights the active sub-page
       // Tier 2: Highlight Dashboard in main nav
       currentPage: 'dashboard',
 
-      // Tier 1: Show location
-      breadcrumbs: [
-        { label: 'Home', url: 'https://www.sailorskills.com/' },
-        { label: 'Admin', url: 'https://sailorskills-dashboard.vercel.app' },
-        { label: 'Dashboard' }
-      ],
-
       // Tier 3: Dashboard-specific pages
       subPages: [
         { id: 'dashboard', label: 'Dashboard', url: '/dashboard.html' },
@@ -334,12 +299,7 @@ currentSubPage: 'dashboard' // Highlights the active sub-page
     import { initNavigation } from 'https://sailorskills-shared.vercel.app/src/ui/navigation.js';
 
     initNavigation({
-      currentPage: 'billing',
-      breadcrumbs: [
-        { label: 'Home', url: 'https://www.sailorskills.com/' },
-        { label: 'Admin', url: 'https://sailorskills-dashboard.vercel.app' },
-        { label: 'Billing' }
-      ]
+      currentPage: 'billing'
       // No subPages - single-page service
     });
   </script>
@@ -375,12 +335,6 @@ currentSubPage: 'dashboard' // Highlights the active sub-page
 
     initNavigation({
       currentPage: 'operations',
-      breadcrumbs: [
-        { label: 'Home', url: 'https://www.sailorskills.com/' },
-        { label: 'Admin', url: 'https://sailorskills-dashboard.vercel.app' },
-        { label: 'Operations', url: '/operations.html' },
-        { label: 'Calendar' } // Current page
-      ],
       subPages: [
         { id: 'operations', label: 'Overview', url: '/operations.html' },
         { id: 'calendar', label: 'Calendar', url: '/calendar.html' },
@@ -402,10 +356,10 @@ currentSubPage: 'dashboard' // Highlights the active sub-page
 **Copy and paste this prompt to your AI coding assistant when implementing navigation in a service:**
 
 ```
-# Task: Implement Three-Tier Sailor Skills Navigation
+# Task: Implement Two-Tier Sailor Skills Navigation
 
 ## Context
-I'm working on a Sailor Skills microservice that needs to implement our standardized three-tier navigation system. The shared navigation components are available in the `/shared` git submodule.
+I'm working on a Sailor Skills microservice that needs to implement our standardized two-tier navigation system. The shared navigation components are available via CDN.
 
 ## Requirements
 
@@ -419,7 +373,7 @@ Add these to the `<head>` of all HTML pages:
 <link rel="stylesheet" href="https://sailorskills-shared.vercel.app/src/ui/styles.css">
 ```
 
-### 2. Initialize Three-Tier Navigation
+### 2. Initialize Two-Tier Navigation
 Add this before the closing `</body>` tag:
 
 ```html
@@ -430,13 +384,6 @@ Add this before the closing `</body>` tag:
     // TIER 2: Main service navigation
     // Choose ONE: 'dashboard' | 'billing' | 'operations' | 'inventory' | 'video' | 'estimator'
     currentPage: '[SERVICE_ID]',
-
-    // TIER 1: Breadcrumb trail (REQUIRED)
-    breadcrumbs: [
-      { label: 'Home', url: 'https://www.sailorskills.com/' },
-      { label: 'Admin', url: 'https://sailorskills-dashboard.vercel.app' },
-      { label: '[CURRENT_PAGE_NAME]' }
-    ],
 
     // TIER 3: Sub-navigation (OPTIONAL - only if service has 3+ pages)
     subPages: [
@@ -463,20 +410,20 @@ For EACH HTML page in this service:
 2. **Add Montserrat font** to `<head>`
 3. **Remove any hardcoded navigation HTML** (if exists)
 4. **Add initNavigation() call** before `</body>`
-5. **Configure Tier 1 (breadcrumb)**: Show hierarchical location
-6. **Configure Tier 2 (currentPage)**: Set to this service's ID
-7. **Configure Tier 3 (subPages)**: If multi-page service, list all pages with:
+5. **Configure Tier 2 (currentPage)**: Set to this service's ID
+6. **Configure Tier 3 (subPages)**: If multi-page service, list all pages with:
    - Unique `id` for each page
    - Short `label` (1-3 words, title case)
    - Relative `url` from service root
    - Set `currentSubPage` to match current page's `id`
 
-### 5. Three-Tier Navigation Rules
+### 5. Two-Tier Navigation Rules
 
-**Tier 1 (Breadcrumb):**
-- Always start with "Home" → Main site
-- Include parent service if on sub-page
-- Current page has no URL (last item)
+**Tier 1 (Top Nav):**
+- SAILOR SKILLS logo and logout link
+- Automatically added - no configuration needed
+- Logo links to main website
+- Logout uses Supabase auth by default
 
 **Tier 2 (Main Nav):**
 - Use exact service ID (lowercase)
@@ -493,11 +440,6 @@ For EACH HTML page in this service:
 ```javascript
 initNavigation({
   currentPage: 'dashboard',
-  breadcrumbs: [
-    { label: 'Home', url: 'https://www.sailorskills.com/' },
-    { label: 'Admin', url: 'https://sailorskills-dashboard.vercel.app' },
-    { label: 'Dashboard' }
-  ],
   subPages: [
     { id: 'dashboard', label: 'Dashboard', url: '/dashboard.html' },
     { id: 'boats', label: 'Boats & History', url: '/boats.html' },
@@ -511,12 +453,7 @@ initNavigation({
 
 ```javascript
 initNavigation({
-  currentPage: 'billing',
-  breadcrumbs: [
-    { label: 'Home', url: 'https://www.sailorskills.com/' },
-    { label: 'Admin', url: 'https://sailorskills-dashboard.vercel.app' },
-    { label: 'Billing' }
-  ]
+  currentPage: 'billing'
   // No subPages for single-page services
 });
 ```
@@ -525,12 +462,12 @@ initNavigation({
 
 After implementing:
 - [ ] Navigation appears at top of every page
-- [ ] Breadcrumb trail shows correct location (Tier 1)
+- [ ] SAILOR SKILLS logo visible in top nav (Tier 1)
+- [ ] Logout link visible and functional (Tier 1)
 - [ ] Current service highlighted in main nav (Tier 2)
 - [ ] Sub-navigation shows (if multi-page service) (Tier 3)
 - [ ] Current sub-page highlighted (if applicable)
 - [ ] All navigation links work correctly
-- [ ] Logout button visible and functional
 - [ ] Shared styles applied (Montserrat font, colors)
 
 ## Important Notes
@@ -540,7 +477,7 @@ After implementing:
 3. **Labels are title case**: 'Dashboard', not 'dashboard'
 4. **No navigation for public services**: Estimator doesn't need nav
 5. **Test cross-service navigation**: Clicking BILLING should go to billing service
-6. **Breadcrumb last item has no URL**: It's the current page
+6. **Top nav is automatic**: Logo and logout are added automatically - no configuration needed
 
 ## Questions to Ask Me
 
@@ -548,9 +485,9 @@ If you're unsure:
 1. What is the exact service ID for this service?
 2. Does this service have multiple related pages? (for Tier 3)
 3. What should the page labels be for the sub-navigation?
-4. What's the breadcrumb hierarchy for sub-pages?
+4. Do I need a custom logout handler?
 
-## Please proceed to implement the three-tier navigation following these specifications.
+## Please proceed to implement the two-tier navigation following these specifications.
 ```
 
 ---
@@ -628,17 +565,16 @@ Before marking navigation as complete:
 - [ ] `https://sailorskills-shared.vercel.app/src/ui/styles.css` imported
 - [ ] `initNavigation()` called before `</body>`
 
-**Tier 1 (Breadcrumb):**
-- [ ] Starts with "Home"
-- [ ] Shows correct hierarchy
-- [ ] Current page has no URL
-- [ ] Links work correctly
+**Tier 1 (Top Navigation):**
+- [ ] SAILOR SKILLS logo displays correctly
+- [ ] Logo links to main website
+- [ ] Logout link displays correctly
+- [ ] Logout functionality works
 
 **Tier 2 (Main Navigation):**
 - [ ] Correct `currentPage` value set
 - [ ] Current service highlighted
 - [ ] All service links work
-- [ ] Logout button visible
 
 **Tier 3 (Sub-Navigation):**
 - [ ] `subPages` configured (if multi-page service)
@@ -676,12 +612,8 @@ Before marking navigation as complete:
 **Parameters**:
 ```typescript
 {
-  currentPage: string,           // Required: Service ID
-  breadcrumbs: Array<{           // Required: Tier 1
-    label: string,
-    url?: string                 // Omit for current page
-  }>,
-  subPages?: Array<{             // Optional: Tier 3
+  currentPage: string,           // Required: Service ID (e.g., 'dashboard', 'billing')
+  subPages?: Array<{             // Optional: Tier 3 - Service-specific pages
     id: string,
     label: string,
     url: string
@@ -690,6 +622,10 @@ Before marking navigation as complete:
   onLogout?: Function            // Optional: Custom logout handler
 }
 ```
+
+**Notes**:
+- Tier 1 (top nav with logo and logout) is automatically added
+- No breadcrumb configuration needed
 
 ---
 

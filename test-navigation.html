@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Navigation Test | Sailor Skills</title>
+
+  <!-- Montserrat Font -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+  <!-- Local Shared Styles (for testing) -->
+  <link rel="stylesheet" href="src/ui/design-tokens.css">
+  <link rel="stylesheet" href="src/ui/styles.css">
+
+  <style>
+    body {
+      margin: 0;
+      padding: 0;
+    }
+    .test-content {
+      max-width: 1200px;
+      margin: 40px auto;
+      padding: 0 20px;
+    }
+    .test-content h1 {
+      color: var(--ss-primary);
+      margin-bottom: 20px;
+    }
+    .test-content p {
+      color: var(--ss-text-medium);
+      line-height: 1.6;
+    }
+  </style>
+</head>
+<body>
+  <!-- Navigation will be injected here -->
+
+  <div class="test-content">
+    <h1>Navigation Test Page</h1>
+    <p>This page tests the new two-tier navigation system.</p>
+
+    <h2>Expected Navigation Structure:</h2>
+    <ul>
+      <li><strong>Tier 1 (Top):</strong> SAILOR SKILLS logo on left, Logout link on right</li>
+      <li><strong>Tier 2 (Middle):</strong> DASHBOARD | BILLING | OPERATIONS | INVENTORY | VIDEO | ESTIMATOR (with Dashboard highlighted)</li>
+      <li><strong>Tier 3 (Bottom):</strong> Dashboard | Boats & History | Packing Lists | Service Logs | Schedule | Paint Alerts (with Dashboard highlighted)</li>
+    </ul>
+
+    <h2>What Changed:</h2>
+    <ul>
+      <li>✅ Removed breadcrumb trail (was: Home › Admin › Dashboard)</li>
+      <li>✅ Added SAILOR SKILLS logo to top navigation</li>
+      <li>✅ Moved logout from Tier 2 to Tier 1</li>
+      <li>✅ Logout is now a link instead of a button</li>
+    </ul>
+  </div>
+
+  <!-- Navigation Initialization -->
+  <script type="module">
+    import { initNavigation } from './src/ui/navigation.js';
+
+    // Mock Supabase auth for testing
+    window.supabaseAuth = {
+      signOut: () => {
+        alert('Logout clicked! (This is a test - no actual logout)');
+      }
+    };
+
+    initNavigation({
+      // Tier 2: Main service
+      currentPage: 'dashboard',
+
+      // Tier 3: Sub-pages
+      subPages: [
+        { id: 'dashboard', label: 'Dashboard', url: '#dashboard' },
+        { id: 'boats', label: 'Boats & History', url: '#boats' },
+        { id: 'packing', label: 'Packing Lists', url: '#packing' },
+        { id: 'logs', label: 'Service Logs', url: '#logs' },
+        { id: 'schedule', label: 'Schedule', url: '#schedule' },
+        { id: 'alerts', label: 'Paint Alerts', url: '#alerts' }
+      ],
+      currentSubPage: 'dashboard'
+    });
+  </script>
+</body>
+</html>

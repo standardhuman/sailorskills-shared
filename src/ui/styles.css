@@ -490,33 +490,51 @@
   color: var(--ss-white);
 }
 
-/* ===== BREADCRUMB (Tier 1) ===== */
-.breadcrumb {
-  background: var(--ss-bg-light);
-  padding: 12px 40px;
+/* ===== TOP NAVIGATION (Tier 1) ===== */
+/* SAILOR SKILLS logo and logout link */
+
+.top-nav {
+  background: var(--ss-white);
+  padding: 16px 40px;
   border-bottom: var(--ss-border-width) solid var(--ss-border-subtle);
-  font-size: var(--ss-text-sm);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  max-width: var(--ss-max-width-2xl);
+  margin: 0 auto;
 }
 
-.breadcrumb a {
-  color: var(--ss-primary-light);
+.top-nav .nav-logo {
+  font-family: var(--ss-font-primary);
+  font-size: var(--ss-text-xl);
+  font-weight: var(--ss-weight-bold);
+  color: var(--ss-primary);
   text-decoration: none;
+  letter-spacing: var(--ss-tracking-wide);
+  white-space: nowrap;
   transition: color var(--ss-transition-fast);
 }
 
-.breadcrumb a:hover {
-  color: var(--ss-primary);
-  text-decoration: underline;
+.top-nav .nav-logo:hover {
+  color: var(--ss-primary-hover);
 }
 
-.breadcrumb .separator {
-  margin: 0 var(--ss-space-sm);
-  color: var(--ss-text-medium);
-}
-
-.breadcrumb .current {
-  color: var(--ss-primary);
+.top-nav .logout-link {
+  font-family: var(--ss-font-primary);
+  font-size: var(--ss-text-sm);
   font-weight: var(--ss-weight-medium);
+  color: var(--ss-info);
+  text-decoration: none;
+  padding: 8px 20px;
+  border-radius: 6px;
+  background: rgba(102, 126, 234, 0.1);
+  border: var(--ss-border-width) solid rgba(102, 126, 234, 0.3);
+  transition: all var(--ss-transition-normal);
+}
+
+.top-nav .logout-link:hover {
+  background: var(--ss-info);
+  color: var(--ss-white);
 }
 
 /* ===== SUB-NAVIGATION (Tier 3) ===== */
@@ -623,6 +641,21 @@
 
 /* Responsive navigation */
 @media (max-width: 768px) {
+  .top-nav {
+    padding: 12px 20px;
+    flex-direction: row;
+    gap: 15px;
+  }
+
+  .top-nav .nav-logo {
+    font-size: var(--ss-text-lg);
+  }
+
+  .top-nav .logout-link {
+    font-size: 12px;
+    padding: 6px 12px;
+  }
+
   .global-nav-container {
     flex-direction: column;
     gap: 20px;
@@ -638,11 +671,6 @@
   .global-nav a {
     font-size: var(--ss-text-sm);
     padding: 6px 12px;
-  }
-
-  .breadcrumb {
-    padding: 10px 20px;
-    font-size: 12px;
   }
 
   .sub-nav-container {
