@@ -183,7 +183,7 @@ export function injectNavigation(options = {}) {
  *   currentSubPage: 'dashboard',
  *
  *   // Optional logout handler
- *   onLogout: () => { /* custom logout logic */ }
+ *   onLogout: () => { console.log('logging out'); }
  * });
  */
 export function initNavigation(options = {}) {
