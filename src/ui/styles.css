@@ -538,7 +538,7 @@
 /* Service-specific page navigation */
 
 .sub-nav {
-  background-color: var(--ss-primary);
+  background-color: var(--ss-primary) !important;
   border-bottom: var(--ss-border-width-thick) solid var(--ss-border-dark);
   padding: 0;
 }
