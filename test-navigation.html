@@ -72,6 +72,13 @@
       // Tier 2: Main service
       currentPage: 'dashboard',
 
+      // Old breadcrumbs parameter (for backward compatibility testing)
+      breadcrumbs: [
+        { label: 'Home', url: 'https://www.sailorskills.com/' },
+        { label: 'Admin', url: '#' },
+        { label: 'Dashboard' }
+      ],
+
       // Tier 3: Sub-pages
       subPages: [
         { id: 'dashboard', label: 'Dashboard', url: '#dashboard' },
@@ -81,7 +88,13 @@
         { id: 'schedule', label: 'Schedule', url: '#schedule' },
         { id: 'alerts', label: 'Paint Alerts', url: '#alerts' }
       ],
-      currentSubPage: 'dashboard'
+      currentSubPage: 'dashboard',
+
+      // Custom logout handler
+      onLogout: () => {
+        alert('Custom logout handler called!');
+        console.log('Logging out via custom handler...');
+      }
     });
   </script>
 </body>

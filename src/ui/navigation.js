@@ -67,17 +67,14 @@ export function createGlobalNav(options = {}) {
 /**
  * Create top navigation bar (Tier 1 - Top Navigation)
  * Displays SAILOR SKILLS logo on the left and logout link on the right
- * @param {Function} [onLogout] - Optional logout handler
  * @returns {string} HTML string for top navigation bar
  */
-export function createTopNav(onLogout) {
-    const logoutHandler = onLogout ? onLogout : 'window.supabaseAuth?.signOut()';
-
+export function createTopNav() {
     return `
     <!-- Top Navigation (Tier 1) -->
     <div class="top-nav">
         <a href="https://www.sailorskills.com/" class="nav-logo">SAILOR SKILLS</a>
-        <a href="#" class="logout-link" onclick="${logoutHandler}; return false;">Logout</a>
+        <a href="#" class="logout-link" id="ss-logout-link">Logout</a>
     </div>`;
 }
 
@@ -118,15 +115,21 @@ export function createSubNav(options = {}) {
  *
  * @param {Object} options - Navigation options
  * @param {string} options.currentPage - Current active page (main service)
+ * @param {Array} [options.breadcrumbs] - DEPRECATED: Ignored for backward compatibility
  * @param {Array} [options.subPages] - Sub-pages for Tier 3 (service-specific pages)
  * @param {string} [options.currentSubPage] - Current active sub-page ID
  * @param {Function} [options.onLogout] - Optional logout handler
  */
 export function injectNavigation(options = {}) {
-    const { currentPage, subPages, currentSubPage, onLogout } = options;
+    const { currentPage, subPages, currentSubPage, onLogout, breadcrumbs } = options;
+
+    // Backward compatibility: breadcrumbs parameter is deprecated but accepted to prevent errors
+    if (breadcrumbs) {
+        console.warn('Navigation breadcrumbs parameter is deprecated. The top navigation now shows SAILOR SKILLS logo and logout link.');
+    }
 
     // Create navigation HTML for all tiers
-    const topNavHTML = createTopNav(onLogout);
+    const topNavHTML = createTopNav();
     const navHTML = createGlobalNav({ currentPage });
     const subNavHTML = subPages ? createSubNav({ subPages, currentSubPage }) : '';
 
@@ -139,6 +142,21 @@ export function injectNavigation(options = {}) {
     const referenceNode = body.firstChild;
     while (navContainer.firstChild) {
         body.insertBefore(navContainer.firstChild, referenceNode);
+    }
+
+    // Attach logout event listener after DOM injection
+    const logoutLink = document.getElementById('ss-logout-link');
+    if (logoutLink) {
+        logoutLink.addEventListener('click', function(e) {
+            e.preventDefault();
+            if (onLogout && typeof onLogout === 'function') {
+                onLogout();
+            } else if (window.supabaseAuth && typeof window.supabaseAuth.signOut === 'function') {
+                window.supabaseAuth.signOut();
+            } else {
+                console.warn('No logout handler available. Please configure Supabase auth or provide an onLogout function.');
+            }
+        });
     }
 }
 
