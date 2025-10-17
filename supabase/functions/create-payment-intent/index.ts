@@ -351,10 +351,31 @@ serve(async (req) => {
     if (!customer) throw new Error('Failed to create or retrieve customer')
 
     // Create or get Stripe customer
+    // Handle mode switching gracefully (test vs live)
     let stripeCustomer
+    let needsNewCustomer = false
+
     if (customer.stripe_customer_id) {
-      stripeCustomer = await stripe.customers.retrieve(customer.stripe_customer_id)
+      try {
+        // Try to retrieve existing customer
+        stripeCustomer = await stripe.customers.retrieve(customer.stripe_customer_id)
+
+        // Check if customer was deleted
+        if ((stripeCustomer as any).deleted) {
+          console.log(`Customer ${customer.stripe_customer_id} was deleted, creating new one`)
+          needsNewCustomer = true
+        }
+      } catch (error: any) {
+        // Customer doesn't exist in this mode (test vs live mismatch)
+        console.log(`Customer ${customer.stripe_customer_id} not found in ${stripeMode} mode, creating new customer`)
+        needsNewCustomer = true
+      }
     } else {
+      needsNewCustomer = true
+    }
+
+    if (needsNewCustomer) {
+      // Create new customer for current mode
       stripeCustomer = await stripe.customers.create({
         email: formData.customerEmail,
         name: formData.customerName,
@@ -368,7 +389,9 @@ serve(async (req) => {
         }
       })
 
-      // Update customer with Stripe ID
+      console.log(`Created new Stripe customer ${stripeCustomer.id} in ${stripeMode} mode`)
+
+      // Update customer with new Stripe ID
       await supabase
         .from('customers')
         .update({ stripe_customer_id: stripeCustomer.id })
