@@ -69,6 +69,7 @@ function generateAdminNotificationEmail(
   estimatedAmount: number,
   boatName: string,
   marinaName: string,
+  dock: string,
   slipNumber: string,
   isRecurring: boolean
 ): string {
@@ -145,6 +146,10 @@ function generateAdminNotificationEmail(
                 <td style="padding: 12px; border: 1px solid #ddd;">${marinaName || 'N/A'}</td>
               </tr>
               <tr style="background-color: #f9f9f9;">
+                <td style="padding: 12px; border: 1px solid #ddd; font-weight: bold;">Dock:</td>
+                <td style="padding: 12px; border: 1px solid #ddd;">${dock || 'N/A'}</td>
+              </tr>
+              <tr>
                 <td style="padding: 12px; border: 1px solid #ddd; font-weight: bold;">Slip Number:</td>
                 <td style="padding: 12px; border: 1px solid #ddd;">${slipNumber || 'N/A'}</td>
               </tr>
@@ -600,6 +605,7 @@ serve(async (req) => {
         formData.estimate,
         formData.boatName || 'N/A',
         formData.marinaName || 'N/A',
+        formData.dock || 'N/A',
         formData.slipNumber || 'N/A',
         isRecurring
       )
