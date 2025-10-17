@@ -25,6 +25,7 @@ const allowedOrigins = [
   'https://cost-calculator-sigma.vercel.app',
   'https://sailorskills-estimator.vercel.app',
   'https://sailorskills-estimator-309d9lol8-brians-projects-bc2d3592.vercel.app',
+  'https://diving.sailorskills.com',
   'http://localhost:3000',
   'http://localhost:5173',
   'http://localhost:5175'
