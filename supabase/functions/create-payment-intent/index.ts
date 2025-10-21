@@ -72,7 +72,8 @@ function generateAdminNotificationEmail(
   marinaName: string,
   dock: string,
   slipNumber: string,
-  isRecurring: boolean
+  isRecurring: boolean,
+  customerNotes: string
 ): string {
   const paymentStatus = isRecurring ? '💳 Payment Method Saved' : '✅ Payment Processed'
 
@@ -155,6 +156,13 @@ function generateAdminNotificationEmail(
                 <td style="padding: 12px; border: 1px solid #ddd;">${slipNumber || 'N/A'}</td>
               </tr>
             </table>
+
+            ${customerNotes ? `
+            <h2 style="color: #345475; margin: 30px 0 20px 0;">Customer Notes</h2>
+            <div style="padding: 15px; background-color: #f9fafb; border-left: 4px solid #345475; border-radius: 4px;">
+              <p style="margin: 0; white-space: pre-wrap; font-family: Arial, sans-serif; color: #1f2937;">${customerNotes}</p>
+            </div>
+            ` : ''}
 
             <p style="margin: 30px 0 0 0; padding: 15px; background-color: #fef3c7; border-left: 4px solid #f59e0b; color: #92400e;">
               <strong>Action Required:</strong> Review this order and schedule the service.
@@ -631,7 +639,8 @@ serve(async (req) => {
         formData.marinaName || 'N/A',
         formData.dock || 'N/A',
         formData.slipNumber || 'N/A',
-        isRecurring
+        isRecurring,
+        formData.customerNotes || ''
       )
 
       const adminEmailResult = await resend.emails.send({
