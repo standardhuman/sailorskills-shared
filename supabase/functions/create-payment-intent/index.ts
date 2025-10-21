@@ -75,7 +75,7 @@ function generateAdminNotificationEmail(
   isRecurring: boolean,
   customerNotes: string
 ): string {
-  const paymentStatus = isRecurring ? '💳 Payment Method Saved' : '✅ Payment Processed'
+  const paymentStatus = '💳 Payment Method Saved (charge after service)'
 
   return `
     <!DOCTYPE html>
@@ -194,8 +194,8 @@ function generateOrderConfirmationEmail(
          Your card is securely saved and will be charged after each service completion.
        </p>`
     : `<p style="margin: 20px 0; padding: 15px; background-color: #e8f4f8; border-left: 4px solid #345475; color: #345475;">
-         <strong>Payment Processed!</strong><br>
-         Your card has been charged $${estimatedAmount.toFixed(2)} for this one-time service.
+         <strong>Payment Method Saved!</strong><br>
+         Your card is securely saved and will be charged $${estimatedAmount.toFixed(2)} after service completion.
        </p>`
 
   return `
@@ -567,38 +567,26 @@ serve(async (req) => {
         })
     }
 
-    // For recurring services, use SetupIntent to save payment method
-    // For one-time services, create a PaymentIntent
+    // IMPORTANT: All services use SetupIntent to save payment method
+    // Customers are ALWAYS charged AFTER service completion, never upfront
+    // This applies to both one-time and recurring services
     let clientSecret, intentType;
-    
-    if (formData.serviceInterval !== 'one-time') {
-      // SetupIntent for recurring - saves card without charging
-      const setupIntent = await stripe.setupIntents.create({
-        customer: stripeCustomer.id,
-        payment_method_types: ['card'],
-        metadata: {
-          order_id: order.id,
-          order_number: orderNumber,
-          service_type: formData.service
-        }
-      })
-      clientSecret = setupIntent.client_secret
-      intentType = 'setup'
-    } else {
-      // PaymentIntent for one-time - charge immediately
-      const paymentIntent = await stripe.paymentIntents.create({
-        amount: Math.round(formData.estimate * 100), // Convert to cents
-        currency: 'usd',
-        customer: stripeCustomer.id,
-        metadata: {
-          order_id: order.id,
-          order_number: orderNumber,
-          service_type: formData.service
-        }
-      })
-      clientSecret = paymentIntent.client_secret
-      intentType = 'payment'
-    }
+
+    // SetupIntent - saves card without charging
+    const setupIntent = await stripe.setupIntents.create({
+      customer: stripeCustomer.id,
+      payment_method_types: ['card'],
+      usage: 'off_session', // Allow charging later without customer present
+      metadata: {
+        order_id: order.id,
+        order_number: orderNumber,
+        service_type: formData.service,
+        service_interval: formData.serviceInterval,
+        estimated_amount: formData.estimate.toString()
+      }
+    })
+    clientSecret = setupIntent.client_secret
+    intentType = 'setup'
 
     // Send order confirmation email
     try {
