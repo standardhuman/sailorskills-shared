@@ -445,12 +445,13 @@ serve(async (req) => {
         customer_name: formData.customerName, // Kept for backward compatibility
         customer_email: formData.customerEmail, // Kept for backward compatibility
         customer_phone: formData.customerPhone, // Kept for backward compatibility
-        boat_name: formData.boatName,
-        boat_make: formData.boatMake,
-        boat_model: formData.boatModel,
-        boat_length_ft: parseInt(formData.boatLength) || 0,
-        marina_location: formData.marinaName || null,
-        slip_number: formData.slipNumber || null,
+        name: formData.boatName,
+        make: formData.boatMake,
+        model: formData.boatModel,
+        length: parseInt(formData.boatLength) || 0,
+        marina: formData.marinaName || null,
+        dock: formData.dock || null,
+        slip: formData.slipNumber || null,
         is_active: true
       }
 
@@ -471,7 +472,7 @@ serve(async (req) => {
       const { data: existingBoat } = await supabase
         .from('boats')
         .select('*')
-        .or(`and(customer_id.eq.${customer.id},boat_name.eq.${formData.boatName}),and(customer_email.eq.${formData.customerEmail},boat_name.eq.${formData.boatName})`)
+        .or(`and(customer_id.eq.${customer.id},name.eq.${formData.boatName}),and(customer_email.eq.${formData.customerEmail},name.eq.${formData.boatName})`)
         .limit(1)
         .maybeSingle()
 
