@@ -568,6 +568,50 @@ serve(async (req) => {
         })
     }
 
+    // Create customer_services record for all services (one-time and recurring)
+    // This enables other services (Billing, Operations) to auto-select the customer's service
+    const serviceTypeMap = {
+      'Recurring Cleaning & Anodes': 'recurring_cleaning',
+      'One-time Cleaning & Anodes': 'onetime_cleaning',
+      'Underwater Inspection': 'underwater_inspection',
+      'Item Recovery': 'item_recovery',
+      'Propeller Removal/Installation': 'propeller_service',
+      'Anodes Only': 'anodes_only'
+    };
+
+    const frequencyMap = {
+      'one-time': 'one-time',
+      '1': 'monthly',
+      '2': 'two_months',
+      '3': 'quarterly',
+      '6': 'biannual'
+    };
+
+    const customerServiceData = {
+      customer_id: stripeCustomer.id,
+      boat_id: boat?.id || null,
+      service_type: serviceTypeMap[formData.service] || 'onetime_cleaning',
+      service_name: formData.service,
+      frequency: frequencyMap[formData.serviceInterval] || 'one-time',
+      base_price: formData.estimate,
+      boat_length: parseInt(formData.boatLength) || null,
+      includes_anodes: formData.serviceDetails?.includesAnodes || false,
+      twin_engines: formData.serviceDetails?.twinEngines || false,
+      hull_type: formData.serviceDetails?.hullType || null,
+      boat_type: formData.serviceDetails?.boatType || null,
+      status: 'active',
+      notes: formData.customerNotes || null
+    };
+
+    const { error: customerServiceError } = await supabase
+      .from('customer_services')
+      .insert(customerServiceData);
+
+    if (customerServiceError) {
+      console.error('Warning: Failed to create customer_services record:', customerServiceError);
+      // Don't throw - this is not critical to order completion
+    }
+
     // IMPORTANT: All services use SetupIntent to save payment method
     // Customers are ALWAYS charged AFTER service completion, never upfront
     // This applies to both one-time and recurring services
