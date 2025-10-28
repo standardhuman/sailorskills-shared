@@ -42,6 +42,18 @@
   --ss-warning: #fdcb6e;
   --ss-info: #667eea;
 
+  /* Status Background Tints (for badges, alerts, highlights) */
+  --ss-status-success-bg: #D1FAE5;    /* Light green for completed/success states */
+  --ss-status-success-text: #065F46;  /* Dark green text on light bg */
+  --ss-status-info-bg: #DBEAFE;       /* Light blue for scheduled/info states */
+  --ss-status-info-text: #1E40AF;     /* Dark blue text on light bg */
+  --ss-status-warning-bg: #FEF3C7;    /* Light yellow for pending/warning states */
+  --ss-status-warning-text: #92400E;  /* Dark yellow/brown text on light bg */
+  --ss-status-danger-bg: #FEE2E2;     /* Light red for cancelled/error states */
+  --ss-status-danger-text: #991B1B;   /* Dark red text on light bg */
+  --ss-status-neutral-bg: #F3F4F6;    /* Light gray for low priority/neutral */
+  --ss-status-neutral-text: #6B7280;  /* Medium gray text on light bg */
+
   /* ===== TYPOGRAPHY ===== */
 
   /* Font Families */
