@@ -4,6 +4,40 @@
  */
 
 /**
+ * Centralized sub-page navigation configuration
+ * Each entry defines which services should display the link
+ */
+const SUB_PAGE_LINKS = [
+    {
+        label: 'Transactions',
+        url: '/transactions.html',
+        icon: '💳',
+        services: ['billing']
+    },
+    {
+        label: 'Invoices',
+        url: '/invoices.html',
+        icon: '📄',
+        services: ['operations']
+    },
+    {
+        label: 'My Billing',
+        url: '/billing.html',
+        icon: '💰',
+        services: ['portal']
+    }
+];
+
+/**
+ * Get sub-page links for a specific service
+ * @param {string} serviceName - Name of the service (e.g., 'billing', 'operations', 'portal')
+ * @returns {Array} Array of sub-page links for the service
+ */
+export function getSubPagesForService(serviceName) {
+    return SUB_PAGE_LINKS.filter(link => link.services.includes(serviceName));
+}
+
+/**
  * Create standardized global navigation header (Tier 2 - Middle Navigation)
  * Displays main service links: DASHBOARD | BILLING | OPERATIONS | INVENTORY | VIDEO | ESTIMATOR
  * @param {Object} options - Navigation options
@@ -82,7 +116,7 @@ export function createTopNav() {
 /**
  * Create sub-navigation for service-specific pages (Tier 3 - Bottom Navigation)
  * @param {Object} options - Sub-navigation options
- * @param {Array} options.subPages - Array of sub-page objects {id, label, url}
+ * @param {Array} options.subPages - Array of sub-page objects {id, label, url, icon (optional)}
  * @param {string} options.currentSubPage - Current active sub-page ID
  * @returns {string} HTML string for sub-navigation
  */
@@ -95,7 +129,8 @@ export function createSubNav(options = {}) {
 
     const navItems = subPages.map(page => {
         const activeClass = page.id === currentSubPage ? ' class="active"' : '';
-        return `<a href="${page.url}"${activeClass}>${page.label}</a>`;
+        const iconHTML = page.icon ? `<span class="nav-icon">${page.icon}</span> ` : '';
+        return `<a href="${page.url}"${activeClass}>${iconHTML}${page.label}</a>`;
     }).join('\n                ');
 
     return `
@@ -129,10 +164,25 @@ export function injectNavigation(options = {}) {
         console.warn('Navigation breadcrumbs parameter is deprecated. The top navigation now shows SAILOR SKILLS logo and logout link.');
     }
 
+    // Auto-include service-specific sub-pages from centralized config
+    let finalSubPages = subPages || [];
+    if (currentPage) {
+        const serviceSubPages = getSubPagesForService(currentPage);
+        // Convert centralized config format to subPages format
+        const formattedServicePages = serviceSubPages.map(link => ({
+            id: link.url.replace(/^\/|\.html$/g, ''), // Extract ID from URL
+            label: link.label,
+            url: link.url,
+            icon: link.icon
+        }));
+        // Merge with any manually provided subPages
+        finalSubPages = [...formattedServicePages, ...finalSubPages];
+    }
+
     // Create navigation HTML for all tiers
     const topNavHTML = createTopNav();
     const navHTML = createGlobalNav({ currentPage });
-    const subNavHTML = subPages ? createSubNav({ subPages, currentSubPage }) : '';
+    const subNavHTML = finalSubPages.length > 0 ? createSubNav({ subPages: finalSubPages, currentSubPage }) : '';
 
     // Inject at the beginning of body
     const body = document.body;
@@ -202,5 +252,6 @@ export default {
     createTopNav,
     createSubNav,
     injectNavigation,
-    initNavigation
+    initNavigation,
+    getSubPagesForService
 };
