@@ -47,8 +47,7 @@ export async function initSupabaseAuth(options = {}) {
     if (hideContentOnLoad) {
       hideContent();
     }
-    await showLoginModal(serviceName);
-    return false;
+    return await showLoginModal(serviceName);
   } else {
     // Authenticated
     currentUser = session.user;
