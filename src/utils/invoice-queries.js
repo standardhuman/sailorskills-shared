@@ -28,6 +28,15 @@ export function buildTransactionListQuery(supabase, filters = {}) {
     query = query.lte('issued_at', filters.date_to);
   }
 
+  if (filters.payment_method) {
+    query = query.eq('payment_method', filters.payment_method);
+  }
+
+  if (filters.customer_search) {
+    // Search in customer name and email using ilike (case-insensitive)
+    query = query.or(`customer_details->>name.ilike.%${filters.customer_search}%,customer_details->>email.ilike.%${filters.customer_search}%`);
+  }
+
   if (filters.has_service_link !== undefined) {
     if (filters.has_service_link) {
       query = query.not('service_log_id', 'is', null);
