@@ -8,8 +8,8 @@
   "types": "dist/index.d.ts",
   "scripts": {
     "build": "echo 'No build needed - serving static files from dist/'",
-    "test": "jest",
-    "test:watch": "jest --watch",
+    "test": "vitest run",
+    "test:watch": "vitest",
     "test:playwright": "npx playwright test",
     "test:smart-billing": "npx playwright test tests/smart-billing-flow.spec.js",
     "lint": "eslint src/",
@@ -37,7 +37,8 @@
     "@playwright/test": "^1.55.1",
     "@types/node": "^20.0.0",
     "jest": "^29.0.0",
-    "rollup": "^4.0.0"
+    "rollup": "^4.0.0",
+    "vitest": "^4.0.4"
   },
   "peerDependencies": {
     "@supabase/supabase-js": "^2.0.0"
