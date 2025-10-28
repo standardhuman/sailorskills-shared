@@ -10,19 +10,19 @@
 const SUB_PAGE_LINKS = [
     {
         label: 'Transactions',
-        url: '/transactions.html',
+        url: '/transactions',
         icon: '💳',
         services: ['billing']
     },
     {
         label: 'Invoices',
-        url: '/invoices.html',
+        url: '/invoices',
         icon: '📄',
         services: ['operations']
     },
     {
         label: 'My Billing',
-        url: '/billing.html',
+        url: '/billing',
         icon: '💰',
         services: ['portal']
     }
