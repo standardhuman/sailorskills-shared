@@ -15,7 +15,10 @@ export function formatInvoiceStatus(status) {
     paid: { text: 'Paid', class: 'status-paid' },
     pending: { text: 'Pending', class: 'status-pending' },
     overdue: { text: 'Overdue', class: 'status-overdue' },
-    cancelled: { text: 'Cancelled', class: 'status-cancelled' }
+    cancelled: { text: 'Cancelled', class: 'status-cancelled' },
+    succeeded: { text: 'Succeeded', class: 'status-succeeded' },
+    failed: { text: 'Failed', class: 'status-failed' },
+    refunded: { text: 'Refunded', class: 'status-refunded' }
   };
   return statusMap[status] || { text: status, class: 'status-unknown' };
 }

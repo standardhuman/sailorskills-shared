@@ -13,6 +13,9 @@ describe('Invoice Formatters', () => {
     expect(formatInvoiceStatus('pending')).toEqual({ text: 'Pending', class: 'status-pending' });
     expect(formatInvoiceStatus('overdue')).toEqual({ text: 'Overdue', class: 'status-overdue' });
     expect(formatInvoiceStatus('cancelled')).toEqual({ text: 'Cancelled', class: 'status-cancelled' });
+    expect(formatInvoiceStatus('succeeded')).toEqual({ text: 'Succeeded', class: 'status-succeeded' });
+    expect(formatInvoiceStatus('failed')).toEqual({ text: 'Failed', class: 'status-failed' });
+    expect(formatInvoiceStatus('refunded')).toEqual({ text: 'Refunded', class: 'status-refunded' });
   });
 
   it('formats payment method with icon', () => {
