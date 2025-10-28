@@ -2,10 +2,10 @@
  * Supabase query builders for invoice data
  */
 
-export function buildTransactionListQuery(supabase, filters = {}) {
+export function buildTransactionListQuery(supabase, filters = {}, includeCount = false) {
   let query = supabase
     .from('transaction_details')
-    .select('*')
+    .select('*', includeCount ? { count: 'exact' } : {})
     .order('issued_at', { ascending: false });
 
   if (filters.status) {
