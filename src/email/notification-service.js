@@ -271,7 +271,122 @@ export async function sendNewOrderAlert(orderData) {
   }
 }
 
+/**
+ * Get status color for badge
+ * @param {string} status - Order status
+ * @returns {string} Hex color code
+ */
+function getStatusColor(status) {
+  const colors = {
+    'pending': '#6b7280',
+    'confirmed': '#3b82f6',
+    'in_progress': '#f59e0b',
+    'completed': '#16a34a',
+    'cancelled': '#dc2626'
+  };
+  return colors[status] || '#6b7280';
+}
+
+/**
+ * Get status details description
+ * @param {string} status - Order status
+ * @returns {string} Description text
+ */
+function getStatusDetails(status) {
+  const details = {
+    'pending': 'Your service request is under review. We will confirm your service date shortly.',
+    'confirmed': 'Your service has been scheduled. We will arrive during your scheduled time window.',
+    'in_progress': 'Our team is currently servicing your boat. You will receive a completion notification when finished.',
+    'completed': 'Service completed successfully. Check your email for the service receipt and photos.',
+    'cancelled': 'This service request has been cancelled. Contact us if you have questions.'
+  };
+  return details[status] || '';
+}
+
+/**
+ * Get next steps for status
+ * @param {string} status - Order status
+ * @returns {string} Next steps text
+ */
+function getNextSteps(status) {
+  const steps = {
+    'pending': 'We will review your request and contact you within 24 hours to schedule your service.',
+    'confirmed': 'Please ensure your boat is accessible at the marina during the scheduled time.',
+    'in_progress': 'We will send you photos and a detailed service report when the work is complete.',
+    'completed': 'Review your service photos in the customer portal. Payment receipt has been emailed.',
+    'cancelled': 'Contact us at info@sailorskills.com if you would like to reschedule or discuss alternatives.'
+  };
+  return steps[status] || '';
+}
+
+/**
+ * Send order status update email to customer
+ * @param {object} orderData - Order details
+ * @param {string} orderData.orderId - Order UUID
+ * @param {string} orderData.customerEmail - Customer email address
+ * @param {string} orderData.customerName - Customer full name
+ * @param {string} orderData.boatName - Boat name
+ * @param {string} orderData.oldStatus - Previous status
+ * @param {string} orderData.newStatus - New status
+ * @param {string} orderData.statusDetails - Custom status details (optional)
+ * @param {string} orderData.nextSteps - Custom next steps (optional)
+ * @returns {Promise<object>} Response with success, emailId, emailLogId
+ */
 export async function sendOrderStatusUpdate(orderData) {
-  // TODO: Implement in Task 6
-  throw new Error('Not implemented yet');
+  try {
+    console.log('📧 Sending status update email...');
+
+    // Load template
+    const template = await loadTemplate('status-update');
+
+    // Determine timeline visualization
+    const statusOrder = ['pending', 'confirmed', 'in_progress', 'completed'];
+    const currentIndex = statusOrder.indexOf(orderData.newStatus);
+
+    // Prepare template data
+    const templateData = {
+      customerName: escapeHtml(orderData.customerName),
+      boatName: escapeHtml(orderData.boatName),
+      newStatus: orderData.newStatus.replace('_', ' ').toUpperCase(),
+      statusColor: getStatusColor(orderData.newStatus),
+      statusDetails: escapeHtml(orderData.statusDetails || getStatusDetails(orderData.newStatus)),
+      nextSteps: escapeHtml(orderData.nextSteps || getNextSteps(orderData.newStatus)),
+
+      // Timeline visualization
+      confirmedColor: currentIndex >= 1 ? '#16a34a' : '#e5e7eb',
+      confirmedIcon: currentIndex >= 1 ? '✓' : '',
+      inProgressColor: currentIndex >= 2 ? '#16a34a' : currentIndex === 2 ? '#f59e0b' : '#e5e7eb',
+      inProgressIcon: currentIndex >= 2 ? '✓' : currentIndex === 2 ? '●' : '',
+      completedColor: currentIndex >= 3 ? '#16a34a' : '#e5e7eb',
+      completedIcon: currentIndex >= 3 ? '✓' : '',
+
+      currentYear: new Date().getFullYear()
+    };
+
+    // Render HTML
+    const htmlContent = renderTemplate(template, templateData);
+
+    // Build payload
+    const payload = {
+      recipientEmail: orderData.customerEmail,
+      recipientName: orderData.customerName,
+      subject: `Service Status: ${orderData.newStatus.replace('_', ' ').toUpperCase()} - ${orderData.boatName} - Sailor Skills`,
+      htmlContent,
+      metadata: {
+        boatName: orderData.boatName,
+        oldStatus: orderData.oldStatus,
+        newStatus: orderData.newStatus
+      },
+      orderId: orderData.orderId
+    };
+
+    // Send via edge function
+    const result = await callEmailEdgeFunction('status_update', payload);
+
+    console.log('✅ Status update email sent:', result.emailId);
+    return result;
+
+  } catch (error) {
+    return handleEmailError(error, 'sendOrderStatusUpdate');
+  }
 }
