@@ -140,9 +140,61 @@ export async function sendOrderConfirmation(orderData) {
   }
 }
 
+/**
+ * Send order declined email to customer
+ * @param {object} orderData - Order details
+ * @param {string} orderData.orderId - Order UUID
+ * @param {string} orderData.customerEmail - Customer email address
+ * @param {string} orderData.customerName - Customer full name
+ * @param {string} orderData.boatName - Boat name
+ * @param {string} orderData.serviceType - Type of service
+ * @param {string} orderData.declineReason - Reason for declining
+ * @param {string} orderData.alternativeSuggestion - What customer should do next (optional)
+ * @returns {Promise<object>} Response with success, emailId, emailLogId
+ */
 export async function sendOrderDeclined(orderData) {
-  // TODO: Implement in Task 4
-  throw new Error('Not implemented yet');
+  try {
+    console.log('📧 Sending order declined email...');
+
+    // Load template
+    const template = await loadTemplate('order-declined');
+
+    // Prepare template data
+    const templateData = {
+      customerName: escapeHtml(orderData.customerName),
+      boatName: escapeHtml(orderData.boatName),
+      serviceType: escapeHtml(orderData.serviceType),
+      declineReason: escapeHtml(orderData.declineReason || 'Scheduling conflict or capacity constraint'),
+      alternativeSuggestion: escapeHtml(orderData.alternativeSuggestion || 'Please contact us to discuss alternative scheduling options or different service arrangements.'),
+      currentYear: new Date().getFullYear()
+    };
+
+    // Render HTML
+    const htmlContent = renderTemplate(template, templateData);
+
+    // Build payload
+    const payload = {
+      recipientEmail: orderData.customerEmail,
+      recipientName: orderData.customerName,
+      subject: `Service Request Update - ${orderData.boatName} - Sailor Skills`,
+      htmlContent,
+      metadata: {
+        boatName: orderData.boatName,
+        serviceType: orderData.serviceType,
+        declineReason: orderData.declineReason
+      },
+      orderId: orderData.orderId
+    };
+
+    // Send via edge function
+    const result = await callEmailEdgeFunction('order_declined', payload);
+
+    console.log('✅ Order declined email sent:', result.emailId);
+    return result;
+
+  } catch (error) {
+    return handleEmailError(error, 'sendOrderDeclined');
+  }
 }
 
 export async function sendNewOrderAlert(orderData) {
