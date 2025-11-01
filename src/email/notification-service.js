@@ -197,9 +197,78 @@ export async function sendOrderDeclined(orderData) {
   }
 }
 
+/**
+ * Send new order alert to admin team
+ * @param {object} orderData - Order details
+ * @param {string} orderData.orderId - Order UUID
+ * @param {string} orderData.orderNumber - Order reference number
+ * @param {string} orderData.customerName - Customer full name
+ * @param {string} orderData.customerEmail - Customer email
+ * @param {string} orderData.customerPhone - Customer phone
+ * @param {string} orderData.boatName - Boat name
+ * @param {string|number} orderData.boatLength - Boat length in feet
+ * @param {string} orderData.marina - Marina name
+ * @param {string} orderData.serviceType - Type of service
+ * @param {string} orderData.serviceInterval - Service interval (1-mo, 2-mo, etc.)
+ * @param {number} orderData.estimatedAmount - Estimated cost
+ * @param {string} orderData.specialRequests - Special requests or notes
+ * @param {number} orderData.pendingOrdersCount - Total pending orders
+ * @returns {Promise<object>} Response with success, emailId, emailLogId
+ */
 export async function sendNewOrderAlert(orderData) {
-  // TODO: Implement in Task 5
-  throw new Error('Not implemented yet');
+  try {
+    console.log('📧 Sending new order alert to operations team...');
+
+    // Load template
+    const template = await loadTemplate('new-order-alert');
+
+    // Prepare template data
+    const templateData = {
+      orderNumber: escapeHtml(orderData.orderNumber),
+      orderId: orderData.orderId,
+      customerName: escapeHtml(orderData.customerName),
+      customerEmail: escapeHtml(orderData.customerEmail),
+      customerPhone: escapeHtml(orderData.customerPhone || 'Not provided'),
+      boatName: escapeHtml(orderData.boatName),
+      boatLength: orderData.boatLength,
+      marinaName: escapeHtml(orderData.marina),
+      serviceType: escapeHtml(orderData.serviceType),
+      serviceInterval: escapeHtml(orderData.serviceInterval || 'one-time'),
+      estimatedAmount: formatCurrency(orderData.estimatedAmount),
+      specialRequests: escapeHtml(orderData.specialRequests || 'None'),
+      pendingOrdersCount: orderData.pendingOrdersCount,
+      currentYear: new Date().getFullYear()
+    };
+
+    // Render HTML
+    const htmlContent = renderTemplate(template, templateData);
+
+    // Build payload
+    const payload = {
+      recipientEmail: 'operations@sailorskills.com',
+      recipientName: 'Operations Team',
+      subject: `New Service Order - ${orderData.customerName} - ${orderData.boatName}`,
+      htmlContent,
+      metadata: {
+        orderNumber: orderData.orderNumber,
+        customerName: orderData.customerName,
+        boatName: orderData.boatName,
+        serviceType: orderData.serviceType,
+        estimatedAmount: orderData.estimatedAmount,
+        pendingOrdersCount: orderData.pendingOrdersCount
+      },
+      orderId: orderData.orderId
+    };
+
+    // Send via edge function
+    const result = await callEmailEdgeFunction('new_order_alert', payload);
+
+    console.log('✅ New order alert sent to operations team:', result.emailId);
+    return result;
+
+  } catch (error) {
+    return handleEmailError(error, 'sendNewOrderAlert');
+  }
 }
 
 export async function sendOrderStatusUpdate(orderData) {
