@@ -9,7 +9,8 @@
  */
 export const SERVICES = {
   MAIN_SITE: 'https://www.sailorskills.com',
-  DASHBOARD: 'https://sailorskills-dashboard.vercel.app',      // Business metrics and analytics
+  DASHBOARD: 'https://sailorskills-insight.vercel.app',      // Business metrics and analytics (formerly Dashboard)
+  INSIGHT: 'https://sailorskills-insight.vercel.app',        // Alias for DASHBOARD
   BILLING: 'https://sailorskills-billing.vercel.app',          // Payment processing and invoicing
   OPERATIONS: 'https://sailorskills-operations.vercel.app',    // Field operations (was Portal, includes Schedule)
   CUSTOMERS: 'https://sailorskills-customers.vercel.app',      // Customer-facing portal
@@ -18,7 +19,7 @@ export const SERVICES = {
   VIDEO: 'https://sailorskills-video.vercel.app',              // Video management
 
   // Legacy aliases (for backwards compatibility - remove after migration)
-  ADMIN: 'https://sailorskills-dashboard.vercel.app',
+  ADMIN: 'https://sailorskills-insight.vercel.app',
   PORTAL: 'https://sailorskills-operations.vercel.app',
   SCHEDULE: 'https://sailorskills-operations.vercel.app'
 };
