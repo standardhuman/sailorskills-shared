@@ -384,6 +384,7 @@ serve(async (req) => {
 
     if (needsNewCustomer) {
       // Create new customer for current mode
+      // Note: postal_code omitted - Stripe Card Element collects it directly
       stripeCustomer = await stripe.customers.create({
         email: formData.customerEmail,
         name: formData.customerName,
@@ -392,7 +393,6 @@ serve(async (req) => {
           line1: formData.billingAddress,
           city: formData.billingCity,
           state: formData.billingState,
-          postal_code: formData.billingZip,
           country: 'US'
         }
       })
@@ -421,7 +421,7 @@ serve(async (req) => {
       street: formData.billingAddress,
       city: formData.billingCity,
       state: formData.billingState,
-      zip: formData.billingZip
+      zip: formData.billingZip || null // Optional - Stripe Card Element collects ZIP
     }
 
     if (existingAddress) {
