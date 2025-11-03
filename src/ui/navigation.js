@@ -39,9 +39,9 @@ export function getSubPagesForService(serviceName) {
 
 /**
  * Create standardized global navigation header (Tier 2 - Middle Navigation)
- * Displays main service links: DASHBOARD | BILLING | OPERATIONS | INVENTORY | VIDEO | ESTIMATOR
+ * Displays main service links: INSIGHT | BILLING | OPERATIONS | INVENTORY | VIDEO | ESTIMATOR
  * @param {Object} options - Navigation options
- * @param {string} options.currentPage - Current active page ('dashboard'|'billing'|'operations'|'portal'|'customers'|'inventory'|'video'|'estimator')
+ * @param {string} options.currentPage - Current active page ('insight'|'billing'|'operations'|'portal'|'customers'|'inventory'|'video'|'estimator')
  * @returns {string} HTML string for the navigation header
  */
 export function createGlobalNav(options = {}) {
@@ -71,9 +71,9 @@ export function createGlobalNav(options = {}) {
             { id: 'contact', label: 'CONTACT', url: 'https://www.sailorskills.com/contact' }
         ];
     } else {
-        // Internal navigation for Dashboard, Billing, Operations, Portal, Inventory, Video, Estimator
+        // Internal navigation for Insight, Billing, Operations, Portal, Inventory, Video, Estimator
         navItems = [
-            { id: 'dashboard', label: 'DASHBOARD', url: 'https://sailorskills-dashboard.vercel.app' },
+            { id: 'insight', label: 'INSIGHT', url: 'https://sailorskills-insight.vercel.app' },
             { id: 'billing', label: 'BILLING', url: 'https://sailorskills-billing.vercel.app' },
             { id: 'operations', label: 'OPERATIONS', url: 'https://sailorskills-operations.vercel.app' },
             { id: 'portal', label: 'PORTAL', url: 'https://sailorskills-portal.vercel.app' },
@@ -220,7 +220,7 @@ export function injectNavigation(options = {}) {
  *
  * initNavigation({
  *   // Tier 2: Main service navigation
- *   currentPage: 'dashboard',
+ *   currentPage: 'insight',
  *
  *   // Tier 3: Service-specific sub-pages (OPTIONAL)
  *   subPages: [
