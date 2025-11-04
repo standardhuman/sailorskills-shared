@@ -18,7 +18,7 @@ const SUB_PAGE_LINKS = [
         label: 'Invoices',
         url: '/invoices',
         icon: '📄',
-        services: ['operations']
+        services: ['billing']
     },
     {
         label: 'My Billing',
