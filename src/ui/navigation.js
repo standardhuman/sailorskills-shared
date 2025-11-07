@@ -39,7 +39,7 @@ export function getSubPagesForService(serviceName) {
 
 /**
  * Create standardized global navigation header (Tier 2 - Middle Navigation)
- * Displays main service links: INSIGHT | BILLING | OPERATIONS | INVENTORY | VIDEO | ESTIMATOR
+ * Displays main service links with grouped dropdowns for better space management
  * @param {Object} options - Navigation options
  * @param {string} options.currentPage - Current active page ('insight'|'billing'|'operations'|'portal'|'customers'|'inventory'|'video'|'estimator')
  * @returns {string} HTML string for the navigation header
@@ -54,43 +54,64 @@ export function createGlobalNav(options = {}) {
     const isPublicService = currentPage === 'estimator';
     const isCustomerPortal = currentPage === 'customers';
 
-    let navItems;
+    let navHTML;
     if (isPublicService) {
         // Public navigation for Estimator and Site
-        navItems = [
+        const navItems = [
             { id: 'home', label: 'HOME', url: 'https://www.sailorskills.com/' },
             { id: 'training', label: 'TRAINING', url: 'https://www.sailorskills.com/training' },
             { id: 'diving', label: 'DIVING', url: 'https://www.sailorskills.com/diving' },
             { id: 'detailing', label: 'DETAILING', url: 'https://www.sailorskills.com/detailing' },
             { id: 'deliveries', label: 'DELIVERIES', url: 'https://www.sailorskills.com/deliveries' }
         ];
+        navHTML = navItems.map(item => {
+            const activeClass = item.id === currentPage ? ' class="active"' : '';
+            return `<a href="${item.url}"${activeClass}>${item.label}</a>`;
+        }).join('\n                ');
     } else if (isCustomerPortal) {
         // Customer portal navigation (minimal)
-        navItems = [
+        const navItems = [
             { id: 'home', label: 'HOME', url: 'https://www.sailorskills.com/' },
             { id: 'contact', label: 'CONTACT', url: 'https://www.sailorskills.com/contact' }
         ];
+        navHTML = navItems.map(item => {
+            const activeClass = item.id === currentPage ? ' class="active"' : '';
+            return `<a href="${item.url}"${activeClass}>${item.label}</a>`;
+        }).join('\n                ');
     } else {
-        // Internal navigation for all microservices
-        navItems = [
-            { id: 'insight', label: 'INSIGHT', url: 'https://sailorskills-insight.vercel.app' },
-            { id: 'billing', label: 'BILLING', url: 'https://sailorskills-billing.vercel.app' },
-            { id: 'operations', label: 'OPERATIONS', url: 'https://sailorskills-operations.vercel.app' },
-            { id: 'portal', label: 'PORTAL', url: 'https://sailorskills-portal.vercel.app' },
-            { id: 'inventory', label: 'INVENTORY', url: 'https://sailorskills-inventory.vercel.app' },
-            { id: 'video', label: 'VIDEO', url: 'https://sailorskills-video.vercel.app' },
-            { id: 'booking', label: 'BOOKING', url: 'https://sailorskills-booking.vercel.app' },
-            { id: 'marketing', label: 'MARKETING', url: 'https://sailorskills-marketing.vercel.app' },
-            { id: 'estimator', label: 'ESTIMATOR', url: 'https://sailorskills-estimator.vercel.app' },
-            { id: 'settings', label: 'SETTINGS', url: 'https://sailorskills-settings.vercel.app', icon: '⚙️' }
-        ];
-    }
+        // Internal navigation with grouped dropdowns (reduced from 10 to 5 items)
+        const customerToolsPages = ['marketing', 'estimator', 'portal', 'booking'];
+        const adminToolsPages = ['inventory', 'video'];
 
-    const navHTML = navItems.map(item => {
-        const activeClass = item.id === currentPage ? ' class="active"' : '';
-        const iconHTML = item.icon ? `<span class="nav-icon">${item.icon}</span> ` : '';
-        return `<a href="${item.url}"${activeClass}>${iconHTML}${item.label}</a>`;
-    }).join('\n                ');
+        const isCustomerToolsActive = customerToolsPages.includes(currentPage);
+        const isAdminToolsActive = adminToolsPages.includes(currentPage);
+
+        // Main navigation items with dropdowns
+        navHTML = `
+                <a href="https://sailorskills-operations.vercel.app" ${currentPage === 'operations' ? 'class="active"' : ''}>OPERATIONS</a>
+                <a href="https://sailorskills-billing.vercel.app" ${currentPage === 'billing' ? 'class="active"' : ''}>BILLING</a>
+                <div class="nav-dropdown${isCustomerToolsActive ? ' active' : ''}">
+                    <button class="nav-dropdown-toggle" aria-haspopup="true" aria-expanded="false">
+                        CUSTOMER TOOLS <span class="dropdown-arrow">▾</span>
+                    </button>
+                    <div class="nav-dropdown-menu">
+                        <a href="https://sailorskills-marketing.vercel.app" ${currentPage === 'marketing' ? 'class="active"' : ''}>Marketing</a>
+                        <a href="https://sailorskills-estimator.vercel.app" ${currentPage === 'estimator' ? 'class="active"' : ''}>Estimator</a>
+                        <a href="https://sailorskills-portal.vercel.app" ${currentPage === 'portal' ? 'class="active"' : ''}>Portal</a>
+                        <a href="https://sailorskills-booking.vercel.app" ${currentPage === 'booking' ? 'class="active"' : ''}>Booking</a>
+                    </div>
+                </div>
+                <div class="nav-dropdown${isAdminToolsActive ? ' active' : ''}">
+                    <button class="nav-dropdown-toggle" aria-haspopup="true" aria-expanded="false">
+                        ADMIN TOOLS <span class="dropdown-arrow">▾</span>
+                    </button>
+                    <div class="nav-dropdown-menu">
+                        <a href="https://sailorskills-inventory.vercel.app" ${currentPage === 'inventory' ? 'class="active"' : ''}>Inventory</a>
+                        <a href="https://sailorskills-video.vercel.app" ${currentPage === 'video' ? 'class="active"' : ''}>Video</a>
+                    </div>
+                </div>
+                <a href="https://sailorskills-insight.vercel.app" ${currentPage === 'insight' ? 'class="active"' : ''}>INSIGHT</a>`;
+    }
 
     return `
     <!-- Global Navigation Header -->
@@ -105,7 +126,7 @@ export function createGlobalNav(options = {}) {
 
 /**
  * Create top navigation bar (Tier 1 - Top Navigation)
- * Displays SAILOR SKILLS logo on the left and logout link on the right
+ * Displays SAILOR SKILLS logo on the left, Settings icon, and logout link on the right
  * Includes hamburger menu button for mobile
  * @returns {string} HTML string for top navigation bar
  */
@@ -119,7 +140,12 @@ export function createTopNav() {
             <span></span>
             <span></span>
         </button>
-        <a href="#" class="logout-link" id="ss-logout-link">Logout</a>
+        <div class="top-nav-actions">
+            <a href="https://sailorskills-settings.vercel.app" class="settings-link" title="Settings">
+                <span class="settings-icon">⚙️</span>
+            </a>
+            <a href="#" class="logout-link" id="ss-logout-link">Logout</a>
+        </div>
     </div>`;
 }
 
@@ -246,6 +272,43 @@ export function injectNavigation(options = {}) {
             });
         });
     }
+
+    // Attach dropdown menu event listeners
+    const dropdownToggles = document.querySelectorAll('.nav-dropdown-toggle');
+    dropdownToggles.forEach(toggle => {
+        toggle.addEventListener('click', function(e) {
+            e.preventDefault();
+            const dropdown = this.parentElement;
+            const isOpen = dropdown.classList.contains('open');
+
+            // Close all other dropdowns
+            document.querySelectorAll('.nav-dropdown.open').forEach(d => {
+                if (d !== dropdown) {
+                    d.classList.remove('open');
+                    d.querySelector('.nav-dropdown-toggle').setAttribute('aria-expanded', 'false');
+                }
+            });
+
+            // Toggle current dropdown
+            if (isOpen) {
+                dropdown.classList.remove('open');
+                this.setAttribute('aria-expanded', 'false');
+            } else {
+                dropdown.classList.add('open');
+                this.setAttribute('aria-expanded', 'true');
+            }
+        });
+    });
+
+    // Close dropdowns when clicking outside
+    document.addEventListener('click', function(e) {
+        if (!e.target.closest('.nav-dropdown')) {
+            document.querySelectorAll('.nav-dropdown.open').forEach(dropdown => {
+                dropdown.classList.remove('open');
+                dropdown.querySelector('.nav-dropdown-toggle').setAttribute('aria-expanded', 'false');
+            });
+        }
+    });
 }
 
 /**

@@ -432,7 +432,7 @@
 
 .global-nav {
   display: flex;
-  gap: 40px;
+  gap: 24px;
   align-items: center;
   flex: 1;
   justify-content: center;
@@ -460,6 +460,99 @@
 .global-nav a.active {
   color: var(--ss-info);
   background: rgba(102, 126, 234, 0.1);
+  font-weight: var(--ss-weight-semibold);
+}
+
+/* Dropdown Navigation */
+.nav-dropdown {
+  position: relative;
+  display: inline-block;
+}
+
+.nav-dropdown-toggle {
+  font-family: var(--ss-font-primary);
+  font-size: var(--ss-text-base);
+  color: var(--ss-primary-light);
+  background: none;
+  border: none;
+  cursor: pointer;
+  transition: color var(--ss-transition-fast);
+  font-weight: var(--ss-weight-medium);
+  letter-spacing: var(--ss-tracking-wide);
+  text-transform: uppercase;
+  padding: 8px 16px;
+  border-radius: 6px;
+  white-space: nowrap;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.nav-dropdown-toggle:hover {
+  color: var(--ss-primary);
+  background: rgba(90, 127, 166, 0.1);
+}
+
+.nav-dropdown.active .nav-dropdown-toggle {
+  color: var(--ss-info);
+  background: rgba(102, 126, 234, 0.1);
+  font-weight: var(--ss-weight-semibold);
+}
+
+.dropdown-arrow {
+  font-size: 12px;
+  transition: transform var(--ss-transition-fast);
+}
+
+.nav-dropdown.open .dropdown-arrow {
+  transform: rotate(180deg);
+}
+
+.nav-dropdown-menu {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  background: var(--ss-white);
+  border: var(--ss-border-width) solid var(--ss-border-subtle);
+  border-radius: 6px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  min-width: 180px;
+  z-index: 1000;
+  opacity: 0;
+  visibility: hidden;
+  transform: translateY(-8px);
+  transition: opacity var(--ss-transition-fast),
+              transform var(--ss-transition-fast),
+              visibility var(--ss-transition-fast);
+  margin-top: 8px;
+}
+
+.nav-dropdown.open .nav-dropdown-menu {
+  opacity: 1;
+  visibility: visible;
+  transform: translateY(0);
+}
+
+.nav-dropdown-menu a {
+  display: block;
+  padding: 12px 16px;
+  font-size: var(--ss-text-sm);
+  text-transform: none;
+  letter-spacing: normal;
+  border-bottom: var(--ss-border-width) solid var(--ss-border-subtle);
+}
+
+.nav-dropdown-menu a:last-child {
+  border-bottom: none;
+}
+
+.nav-dropdown-menu a:hover {
+  background: rgba(90, 127, 166, 0.05);
+}
+
+.nav-dropdown-menu a.active {
+  background: rgba(102, 126, 234, 0.1);
+  color: var(--ss-info);
   font-weight: var(--ss-weight-semibold);
 }
 
@@ -518,6 +611,34 @@
 
 .top-nav .nav-logo:hover {
   color: var(--ss-primary-hover);
+}
+
+.top-nav-actions {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+}
+
+.top-nav .settings-link {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 20px;
+  text-decoration: none;
+  padding: 4px 8px;
+  border-radius: 6px;
+  transition: all var(--ss-transition-fast);
+  opacity: 0.7;
+}
+
+.top-nav .settings-link:hover {
+  opacity: 1;
+  background: rgba(90, 127, 166, 0.1);
+}
+
+.top-nav .settings-icon {
+  display: inline-block;
+  line-height: 1;
 }
 
 .top-nav .logout-link {
@@ -742,6 +863,54 @@
 
   .global-nav a:last-child {
     border-bottom: none;
+  }
+
+  /* Mobile dropdown styling */
+  .nav-dropdown {
+    width: 100%;
+  }
+
+  .nav-dropdown-toggle {
+    width: 100%;
+    text-align: left;
+    padding: 16px 20px;
+    border-bottom: 1px solid var(--ss-border-subtle);
+    justify-content: space-between;
+  }
+
+  .nav-dropdown-menu {
+    position: static;
+    opacity: 1;
+    visibility: visible;
+    transform: none;
+    border: none;
+    border-radius: 0;
+    box-shadow: none;
+    margin-top: 0;
+    background: rgba(90, 127, 166, 0.05);
+    max-height: 0;
+    overflow: hidden;
+    transition: max-height 0.3s ease;
+  }
+
+  .nav-dropdown.open .nav-dropdown-menu {
+    max-height: 300px;
+  }
+
+  .nav-dropdown-menu a {
+    padding: 12px 20px 12px 40px;
+    font-size: var(--ss-text-sm);
+  }
+
+  /* Mobile top nav actions */
+  .top-nav-actions {
+    order: 3;
+    gap: 12px;
+  }
+
+  .top-nav .settings-link {
+    font-size: 18px;
+    padding: 4px;
   }
 
   .sub-nav-container {
