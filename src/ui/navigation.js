@@ -82,13 +82,14 @@ export function createGlobalNav(options = {}) {
             { id: 'booking', label: 'BOOKING', url: 'https://sailorskills-booking.vercel.app' },
             { id: 'marketing', label: 'MARKETING', url: 'https://sailorskills-marketing.vercel.app' },
             { id: 'estimator', label: 'ESTIMATOR', url: 'https://sailorskills-estimator.vercel.app' },
-            { id: 'settings', label: 'SETTINGS', url: 'https://sailorskills-settings.vercel.app' }
+            { id: 'settings', label: 'SETTINGS', url: 'https://sailorskills-settings.vercel.app', icon: '⚙️' }
         ];
     }
 
     const navHTML = navItems.map(item => {
         const activeClass = item.id === currentPage ? ' class="active"' : '';
-        return `<a href="${item.url}"${activeClass}>${item.label}</a>`;
+        const iconHTML = item.icon ? `<span class="nav-icon">${item.icon}</span> ` : '';
+        return `<a href="${item.url}"${activeClass}>${iconHTML}${item.label}</a>`;
     }).join('\n                ');
 
     return `
