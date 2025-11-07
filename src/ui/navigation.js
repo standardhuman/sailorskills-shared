@@ -102,6 +102,7 @@ export function createGlobalNav(options = {}) {
 /**
  * Create top navigation bar (Tier 1 - Top Navigation)
  * Displays SAILOR SKILLS logo on the left and logout link on the right
+ * Includes hamburger menu button for mobile
  * @returns {string} HTML string for top navigation bar
  */
 export function createTopNav() {
@@ -109,6 +110,11 @@ export function createTopNav() {
     <!-- Top Navigation (Tier 1) -->
     <div class="top-nav">
         <a href="https://www.sailorskills.com/" class="nav-logo">SAILOR SKILLS</a>
+        <button class="hamburger-menu" id="ss-hamburger-menu" aria-label="Toggle menu">
+            <span></span>
+            <span></span>
+            <span></span>
+        </button>
         <a href="#" class="logout-link" id="ss-logout-link">Logout</a>
     </div>`;
 }
@@ -207,6 +213,33 @@ export function injectNavigation(options = {}) {
             } else {
                 console.warn('No logout handler available. Please configure Supabase auth or provide an onLogout function.');
             }
+        });
+    }
+
+    // Attach hamburger menu event listener for mobile
+    const hamburgerMenu = document.getElementById('ss-hamburger-menu');
+    const globalHeader = document.querySelector('.global-header');
+    if (hamburgerMenu && globalHeader) {
+        hamburgerMenu.addEventListener('click', function() {
+            globalHeader.classList.toggle('mobile-menu-open');
+            hamburgerMenu.classList.toggle('active');
+        });
+
+        // Close menu when clicking outside
+        document.addEventListener('click', function(e) {
+            if (!globalHeader.contains(e.target) && !hamburgerMenu.contains(e.target)) {
+                globalHeader.classList.remove('mobile-menu-open');
+                hamburgerMenu.classList.remove('active');
+            }
+        });
+
+        // Close menu when clicking a nav link
+        const navLinks = globalHeader.querySelectorAll('.global-nav a');
+        navLinks.forEach(link => {
+            link.addEventListener('click', function() {
+                globalHeader.classList.remove('mobile-menu-open');
+                hamburgerMenu.classList.remove('active');
+            });
         });
     }
 }
