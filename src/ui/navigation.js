@@ -81,7 +81,8 @@ export function createGlobalNav(options = {}) {
             { id: 'video', label: 'VIDEO', url: 'https://sailorskills-video.vercel.app' },
             { id: 'booking', label: 'BOOKING', url: 'https://sailorskills-booking.vercel.app' },
             { id: 'marketing', label: 'MARKETING', url: 'https://sailorskills-marketing.vercel.app' },
-            { id: 'estimator', label: 'ESTIMATOR', url: 'https://sailorskills-estimator.vercel.app' }
+            { id: 'estimator', label: 'ESTIMATOR', url: 'https://sailorskills-estimator.vercel.app' },
+            { id: 'settings', label: 'SETTINGS', url: 'https://sailorskills-settings.vercel.app' }
         ];
     }
 
