@@ -25,6 +25,42 @@ const SUB_PAGE_LINKS = [
         url: '/billing',
         icon: '💰',
         services: ['portal']
+    },
+    {
+        label: 'Dashboard',
+        url: '/src/views/dashboard.html',
+        icon: '📊',
+        services: ['settings']
+    },
+    {
+        label: 'Email Templates',
+        url: '/src/views/email-manager.html',
+        icon: '📧',
+        services: ['settings']
+    },
+    {
+        label: 'Email Logs',
+        url: '/src/views/email-logs.html',
+        icon: '📈',
+        services: ['settings']
+    },
+    {
+        label: 'Pricing',
+        url: '/src/views/system-config.html',
+        icon: '💰',
+        services: ['settings']
+    },
+    {
+        label: 'Users',
+        url: '/src/views/users.html',
+        icon: '👥',
+        services: ['settings']
+    },
+    {
+        label: 'Integrations',
+        url: '/src/views/integrations.html',
+        icon: '🔌',
+        services: ['settings']
     }
 ];
 
