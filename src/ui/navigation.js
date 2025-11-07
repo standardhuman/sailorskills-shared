@@ -71,7 +71,7 @@ export function createGlobalNav(options = {}) {
             { id: 'contact', label: 'CONTACT', url: 'https://www.sailorskills.com/contact' }
         ];
     } else {
-        // Internal navigation for Insight, Billing, Operations, Portal, Inventory, Video, Estimator
+        // Internal navigation for all microservices
         navItems = [
             { id: 'insight', label: 'INSIGHT', url: 'https://sailorskills-insight.vercel.app' },
             { id: 'billing', label: 'BILLING', url: 'https://sailorskills-billing.vercel.app' },
@@ -79,6 +79,8 @@ export function createGlobalNav(options = {}) {
             { id: 'portal', label: 'PORTAL', url: 'https://sailorskills-portal.vercel.app' },
             { id: 'inventory', label: 'INVENTORY', url: 'https://sailorskills-inventory.vercel.app' },
             { id: 'video', label: 'VIDEO', url: 'https://sailorskills-video.vercel.app' },
+            { id: 'booking', label: 'BOOKING', url: 'https://sailorskills-booking.vercel.app' },
+            { id: 'marketing', label: 'MARKETING', url: 'https://sailorskills-marketing.vercel.app' },
             { id: 'estimator', label: 'ESTIMATOR', url: 'https://sailorskills-estimator.vercel.app' }
         ];
     }
