@@ -6,7 +6,7 @@ const supabaseKey = import.meta.env.VITE_SUPABASE_ANON_KEY || process.env.VITE_S
 const supabase = createClient(supabaseUrl, supabaseKey);
 
 let pricingCache = null;
-const CACHE_TTL = 5 * 60 * 1000; // 5 minutes
+const CACHE_TTL = 30 * 1000; // 30 seconds (to see Settings changes quickly)
 
 /**
  * Get pricing configuration (cached)
