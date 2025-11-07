@@ -1,8 +1,10 @@
 /**
- * API Endpoint: Search Stripe Customers
+ * API Endpoint: Search Stripe Customers or Fetch Single Customer with Payment Methods
  * GET /api/stripe-customers?search=query
+ * GET /api/stripe-customers?customerId=cus_XXX
  *
  * Searches Stripe customers by name, email, or metadata (boat name)
+ * OR fetches a single customer with payment methods
  * Uses direct HTTP fetch instead of Stripe SDK (due to Vercel compatibility)
  */
 
@@ -25,10 +27,74 @@ export default async function handler(req, res) {
         return res.status(405).json({ error: 'Method not allowed' });
     }
 
-    const { search } = req.query;
+    const { search, customerId } = req.query;
 
+    // Mode 1: Fetch single customer by ID with payment methods
+    if (customerId) {
+        try {
+            console.log('Fetching Stripe customer:', customerId);
+
+            // Fetch customer from Stripe
+            const customerResponse = await fetch(
+                `https://api.stripe.com/v1/customers/${customerId}`,
+                {
+                    method: 'GET',
+                    headers: {
+                        'Authorization': `Bearer ${process.env.STRIPE_SECRET_KEY}`,
+                        'Stripe-Version': '2024-06-20'
+                    }
+                }
+            );
+
+            if (!customerResponse.ok) {
+                const error = await customerResponse.json();
+                throw new Error(error.error?.message || 'Failed to fetch customer');
+            }
+
+            const customer = await customerResponse.json();
+
+            // Fetch payment methods for this customer
+            const pmResponse = await fetch(
+                `https://api.stripe.com/v1/payment_methods?customer=${customerId}&type=card`,
+                {
+                    method: 'GET',
+                    headers: {
+                        'Authorization': `Bearer ${process.env.STRIPE_SECRET_KEY}`,
+                        'Stripe-Version': '2024-06-20'
+                    }
+                }
+            );
+
+            const paymentMethodsData = pmResponse.ok ? await pmResponse.json() : { data: [] };
+            const paymentMethods = paymentMethodsData.data || [];
+
+            console.log(`✅ Found ${paymentMethods.length} payment methods for ${customerId}`);
+
+            // Return customer with payment_methods array (not paymentMethods)
+            return res.status(200).json({
+                id: customer.id,
+                name: customer.name,
+                email: customer.email,
+                phone: customer.phone,
+                payment_methods: paymentMethods.map(pm => ({
+                    id: pm.id,
+                    type: pm.type,
+                    card: pm.card || {}
+                }))
+            });
+
+        } catch (error) {
+            console.error('Error fetching customer:', error);
+            return res.status(500).json({
+                error: 'Failed to fetch customer',
+                details: error.message
+            });
+        }
+    }
+
+    // Mode 2: Search customers
     if (!search || search.length < 2) {
-        return res.status(400).json({ error: 'Search query must be at least 2 characters' });
+        return res.status(400).json({ error: 'Search query or customerId is required' });
     }
 
     try {

@@ -71,7 +71,7 @@ export function createGlobalNav(options = {}) {
             { id: 'contact', label: 'CONTACT', url: 'https://www.sailorskills.com/contact' }
         ];
     } else {
-        // Internal navigation for Insight, Billing, Operations, Portal, Inventory, Video, Estimator
+        // Internal navigation for all microservices
         navItems = [
             { id: 'insight', label: 'INSIGHT', url: 'https://sailorskills-insight.vercel.app' },
             { id: 'billing', label: 'BILLING', url: 'https://sailorskills-billing.vercel.app' },
@@ -79,13 +79,17 @@ export function createGlobalNav(options = {}) {
             { id: 'portal', label: 'PORTAL', url: 'https://sailorskills-portal.vercel.app' },
             { id: 'inventory', label: 'INVENTORY', url: 'https://sailorskills-inventory.vercel.app' },
             { id: 'video', label: 'VIDEO', url: 'https://sailorskills-video.vercel.app' },
-            { id: 'estimator', label: 'ESTIMATOR', url: 'https://sailorskills-estimator.vercel.app' }
+            { id: 'booking', label: 'BOOKING', url: 'https://sailorskills-booking.vercel.app' },
+            { id: 'marketing', label: 'MARKETING', url: 'https://sailorskills-marketing.vercel.app' },
+            { id: 'estimator', label: 'ESTIMATOR', url: 'https://sailorskills-estimator.vercel.app' },
+            { id: 'settings', label: 'SETTINGS', url: 'https://sailorskills-settings.vercel.app', icon: '⚙️' }
         ];
     }
 
     const navHTML = navItems.map(item => {
         const activeClass = item.id === currentPage ? ' class="active"' : '';
-        return `<a href="${item.url}"${activeClass}>${item.label}</a>`;
+        const iconHTML = item.icon ? `<span class="nav-icon">${item.icon}</span> ` : '';
+        return `<a href="${item.url}"${activeClass}>${iconHTML}${item.label}</a>`;
     }).join('\n                ');
 
     return `
@@ -102,6 +106,7 @@ export function createGlobalNav(options = {}) {
 /**
  * Create top navigation bar (Tier 1 - Top Navigation)
  * Displays SAILOR SKILLS logo on the left and logout link on the right
+ * Includes hamburger menu button for mobile
  * @returns {string} HTML string for top navigation bar
  */
 export function createTopNav() {
@@ -109,6 +114,11 @@ export function createTopNav() {
     <!-- Top Navigation (Tier 1) -->
     <div class="top-nav">
         <a href="https://www.sailorskills.com/" class="nav-logo">SAILOR SKILLS</a>
+        <button class="hamburger-menu" id="ss-hamburger-menu" aria-label="Toggle menu">
+            <span></span>
+            <span></span>
+            <span></span>
+        </button>
         <a href="#" class="logout-link" id="ss-logout-link">Logout</a>
     </div>`;
 }
@@ -207,6 +217,33 @@ export function injectNavigation(options = {}) {
             } else {
                 console.warn('No logout handler available. Please configure Supabase auth or provide an onLogout function.');
             }
+        });
+    }
+
+    // Attach hamburger menu event listener for mobile
+    const hamburgerMenu = document.getElementById('ss-hamburger-menu');
+    const globalHeader = document.querySelector('.global-header');
+    if (hamburgerMenu && globalHeader) {
+        hamburgerMenu.addEventListener('click', function() {
+            globalHeader.classList.toggle('mobile-menu-open');
+            hamburgerMenu.classList.toggle('active');
+        });
+
+        // Close menu when clicking outside
+        document.addEventListener('click', function(e) {
+            if (!globalHeader.contains(e.target) && !hamburgerMenu.contains(e.target)) {
+                globalHeader.classList.remove('mobile-menu-open');
+                hamburgerMenu.classList.remove('active');
+            }
+        });
+
+        // Close menu when clicking a nav link
+        const navLinks = globalHeader.querySelectorAll('.global-nav a');
+        navLinks.forEach(link => {
+            link.addEventListener('click', function() {
+                globalHeader.classList.remove('mobile-menu-open');
+                hamburgerMenu.classList.remove('active');
+            });
         });
     }
 }
