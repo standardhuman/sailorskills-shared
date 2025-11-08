@@ -43,11 +43,11 @@ export async function initSupabaseAuth(options = {}) {
   const { data: { session } } = await supabase.auth.getSession();
 
   if (!session) {
-    // Not authenticated - show login modal
-    if (hideContentOnLoad) {
-      hideContent();
-    }
-    return await showLoginModal(serviceName);
+    // Not authenticated - redirect to SSO login
+    console.log('❌ No session found - redirecting to SSO login');
+    const redirectUrl = encodeURIComponent(window.location.href);
+    window.location.href = `https://login.sailorskills.com/login.html?redirect=${redirectUrl}`;
+    return false;
   } else {
     // Authenticated
     currentUser = session.user;
