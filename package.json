@@ -28,7 +28,7 @@
   "license": "UNLICENSED",
   "private": true,
   "dependencies": {
-    "@supabase/supabase-js": "^2.0.0",
+    "@supabase/supabase-js": "^2.80.0",
     "dotenv": "^17.2.3",
     "resend": "^6.1.2",
     "stripe": "^14.25.0"
@@ -40,8 +40,5 @@
     "jsdom": "^27.0.1",
     "rollup": "^4.0.0",
     "vitest": "^4.0.4"
-  },
-  "peerDependencies": {
-    "@supabase/supabase-js": "^2.0.0"
   }
 }
