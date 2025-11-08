@@ -6,6 +6,11 @@
   "main": "dist/index.js",
   "module": "dist/index.esm.js",
   "types": "dist/index.d.ts",
+  "exports": {
+    "./auth": "./src/auth/index.js",
+    "./components/*": "./src/components/*.js",
+    "./utils/*": "./src/utils/*.js"
+  },
   "scripts": {
     "build": "echo 'No build needed - serving static files from dist/'",
     "test": "vitest run",
