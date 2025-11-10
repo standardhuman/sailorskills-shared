@@ -54,24 +54,25 @@ export function deleteCookie(name, options = {}) {
 }
 
 /**
- * Custom storage for Supabase that uses cookies with domain
+ * Custom storage for Supabase using localStorage only
+ *
+ * Note: We use localStorage instead of cookies because Supabase session objects
+ * are typically 2-5KB and exceed the 4KB cookie size limit, causing truncation
+ * and authentication failures.
+ *
+ * Cross-subdomain authentication is handled by the centralized login service
+ * which transfers sessions via URL parameters, not cookies.
  */
 export const customStorage = {
   getItem: (key) => {
-    // Try localStorage first (faster), fallback to cookie
-    const localValue = localStorage.getItem(key)
-    if (localValue) return localValue
-    return getCookie(key)
+    return localStorage.getItem(key)
   },
 
   setItem: (key, value) => {
-    // Set in both localStorage and cookie for redundancy
     localStorage.setItem(key, value)
-    setCookie(key, value, { domain: '.sailorskills.com' })
   },
 
   removeItem: (key) => {
     localStorage.removeItem(key)
-    deleteCookie(key, { domain: '.sailorskills.com' })
   }
 }

@@ -10,7 +10,10 @@ if (!SUPABASE_URL || !SUPABASE_ANON_KEY) {
 }
 
 /**
- * Shared Supabase client configured for SSO across subdomains
+ * Shared Supabase client for all services
+ *
+ * Uses localStorage for session persistence (default for @supabase/supabase-js).
+ * Cross-subdomain authentication is handled by the centralized login service.
  */
 export const supabase = createClient(
   SUPABASE_URL,
@@ -22,13 +25,6 @@ export const supabase = createClient(
       persistSession: true,
       detectSessionInUrl: true,
       flowType: 'pkce' // More secure auth flow
-    },
-    cookieOptions: {
-      name: 'sb-auth-token',
-      domain: '.sailorskills.com', // KEY: Enables cross-subdomain SSO
-      path: '/',
-      sameSite: 'lax',
-      maxAge: 604800 // 7 days
     }
   }
 )
