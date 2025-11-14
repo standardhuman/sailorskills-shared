@@ -186,12 +186,13 @@ function generateOrderConfirmationEmail(
   customerName: string,
   serviceType: string,
   estimatedAmount: number,
-  isRecurring: boolean
+  isRecurring: boolean,
+  serviceInterval: string
 ): string {
   const paymentMessage = isRecurring
     ? `<p style="margin: 20px 0; padding: 15px; background-color: #e8f4f8; border-left: 4px solid #345475; color: #345475;">
          <strong>Payment Method Saved!</strong><br>
-         Your card is securely saved and will be charged after each service completion.
+         Your card is securely saved and will be charged after each service completion (${formatServiceInterval(serviceInterval)}).
        </p>`
     : `<p style="margin: 20px 0; padding: 15px; background-color: #e8f4f8; border-left: 4px solid #345475; color: #345475;">
          <strong>Payment Method Saved!</strong><br>
@@ -228,6 +229,10 @@ function generateOrderConfirmationEmail(
                 <td style="padding: 12px; border: 1px solid #ddd;">${serviceType}</td>
               </tr>
               <tr style="background-color: #f9f9f9;">
+                <td style="padding: 12px; border: 1px solid #ddd; font-weight: bold;">Service Frequency:</td>
+                <td style="padding: 12px; border: 1px solid #ddd;">${formatServiceInterval(serviceInterval)}</td>
+              </tr>
+              <tr>
                 <td style="padding: 12px; border: 1px solid #ddd; font-weight: bold;">Service estimate:</td>
                 <td style="padding: 12px; border: 1px solid #ddd;">$${estimatedAmount.toFixed(2)}</td>
               </tr>
