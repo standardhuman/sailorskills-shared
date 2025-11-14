@@ -264,6 +264,22 @@ function generateOrderConfirmationEmail(
   `
 }
 
+/**
+ * Format service interval code to human-readable text
+ * @param interval - Service interval code ('1', '2', '3', '6', 'one-time')
+ * @returns Formatted interval text
+ */
+function formatServiceInterval(interval: string): string {
+  const intervalMap: Record<string, string> = {
+    'one-time': 'One-time service',
+    '1': 'Monthly (every month)',
+    '2': 'Bi-monthly (every 2 months)',
+    '3': 'Quarterly (every 3 months)',
+    '6': 'Biannual (every 6 months)'
+  };
+  return intervalMap[interval] || 'One-time service';
+}
+
 serve(async (req) => {
   const origin = req.headers.get('origin')
   const corsHeaders = getCorsHeaders(origin)
