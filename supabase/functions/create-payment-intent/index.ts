@@ -73,7 +73,8 @@ function generateAdminNotificationEmail(
   dock: string,
   slipNumber: string,
   isRecurring: boolean,
-  customerNotes: string
+  customerNotes: string,
+  serviceInterval: string
 ): string {
   const paymentStatus = '💳 Payment Method Saved (charge after service)'
 
@@ -115,7 +116,7 @@ function generateAdminNotificationEmail(
               </tr>
               <tr style="background-color: #f9f9f9;">
                 <td style="padding: 12px; border: 1px solid #ddd; font-weight: bold;">Service Type:</td>
-                <td style="padding: 12px; border: 1px solid #ddd;">${isRecurring ? 'Recurring' : 'One-time'}</td>
+                <td style="padding: 12px; border: 1px solid #ddd;">${isRecurring ? `Recurring (${formatServiceInterval(serviceInterval)})` : 'One-time'}</td>
               </tr>
             </table>
 
