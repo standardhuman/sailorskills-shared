@@ -663,7 +663,8 @@ serve(async (req) => {
         formData.customerName,
         formData.service,
         formData.estimate,
-        isRecurring
+        isRecurring,
+        formData.serviceInterval
       )
 
       // Use environment variable for from address (allows using verified test address)
@@ -695,7 +696,8 @@ serve(async (req) => {
         formData.dock || 'N/A',
         formData.slipNumber || 'N/A',
         isRecurring,
-        formData.customerNotes || ''
+        formData.customerNotes || '',
+        formData.serviceInterval
       )
 
       const adminEmailResult = await resend.emails.send({
