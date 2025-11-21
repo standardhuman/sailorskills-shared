@@ -328,16 +328,50 @@ serve(async (req) => {
     if (formData.recoveryLocation) formData.recoveryLocation = sanitize(formData.recoveryLocation)
     if (formData.itemDescription) formData.itemDescription = sanitize(formData.itemDescription)
 
-    // Server-side price validation
+    // Load dynamic pricing from database for validation
+    const { data: pricingData, error: pricingError } = await supabase
+      .from('business_pricing_config')
+      .select('config_key, config_value')
+
+    let pricingConfig: Record<string, number> = {}
+    if (!pricingError && pricingData) {
+      pricingConfig = pricingData.reduce((acc, row) => {
+        acc[row.config_key] = parseFloat(row.config_value)
+        return acc
+      }, {} as Record<string, number>)
+    }
+
+    // Server-side price validation using dynamic pricing
     const validatePrice = (estimate: number, service: string, details: any): boolean => {
-      const MIN_CHARGE = 150
+      // Get minimum charge from dynamic config or fallback
+      const MIN_CHARGE = pricingConfig['minimum_service_charge'] || 149
+
+      // Service rates from dynamic config with fallbacks
       const serviceRates: Record<string, any> = {
-        'Recurring Cleaning & Anodes': { rate: 4.50, type: 'per_foot' },
-        'One-time Cleaning & Anodes': { rate: 6.00, type: 'per_foot' },
-        'Item Recovery': { rate: 199, type: 'flat' },
-        'Underwater Inspection': { rate: 4, type: 'per_foot' },
-        'Propeller Removal/Installation': { rate: 349, type: 'flat' },
-        'Anodes Only': { rate: 150, type: 'flat' }
+        'Recurring Cleaning & Anodes': {
+          rate: pricingConfig['recurring_cleaning_rate'] || 4.49,
+          type: 'per_foot'
+        },
+        'One-time Cleaning & Anodes': {
+          rate: pricingConfig['onetime_cleaning_rate'] || 5.99,
+          type: 'per_foot'
+        },
+        'Item Recovery': {
+          rate: pricingConfig['item_recovery_rate'] || 199,
+          type: 'flat'
+        },
+        'Underwater Inspection': {
+          rate: pricingConfig['underwater_inspection_rate'] || 3.99,
+          type: 'per_foot'
+        },
+        'Propeller Removal/Installation': {
+          rate: pricingConfig['propeller_service_rate'] || 349,
+          type: 'flat'
+        },
+        'Anodes Only': {
+          rate: pricingConfig['anodes_only_rate'] || 149,
+          type: 'flat'
+        }
       }
 
       const serviceConfig = serviceRates[service]
@@ -360,6 +394,12 @@ serve(async (req) => {
 
     // Validate the estimate
     if (!validatePrice(formData.estimate, formData.service, formData.serviceDetails)) {
+      console.error('Price validation failed:', {
+        estimate: formData.estimate,
+        service: formData.service,
+        serviceDetails: formData.serviceDetails,
+        pricingConfig
+      })
       throw new Error('Invalid price calculation')
     }
 
