@@ -234,11 +234,18 @@ function showLoginModal(serviceName) {
  * Setup logout function
  */
 function setupLogout() {
-  window.logout = async function() {
+  const logoutFn = async function() {
     await supabase.auth.signOut();
     currentUser = null;
     console.log('🔓 User logged out');
     window.location.reload();
+  };
+
+  // Set up both window.logout and window.supabaseAuth for compatibility
+  // (navigation.js looks for window.supabaseAuth.signOut)
+  window.logout = logoutFn;
+  window.supabaseAuth = {
+    signOut: logoutFn
   };
 }
 
