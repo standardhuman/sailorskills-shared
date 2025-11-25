@@ -11,9 +11,10 @@ export async function requireAuth() {
   const { user } = await getCurrentUser()
 
   if (!user) {
-    // Store intended destination for redirect after login
+    // Store intended destination for redirect after login (exclude hash to prevent loops)
     if (typeof sessionStorage !== 'undefined') {
-      sessionStorage.setItem('redirectAfterLogin', window.location.href)
+      const cleanUrl = window.location.origin + window.location.pathname + window.location.search
+      sessionStorage.setItem('redirectAfterLogin', cleanUrl)
     }
     window.location.href = LOGIN_URL
     return false
@@ -32,7 +33,8 @@ export async function requireCustomer() {
 
   if (!user || !['customer', 'admin'].includes(role)) {
     if (typeof sessionStorage !== 'undefined') {
-      sessionStorage.setItem('redirectAfterLogin', window.location.href)
+      const cleanUrl = window.location.origin + window.location.pathname + window.location.search
+      sessionStorage.setItem('redirectAfterLogin', cleanUrl)
     }
     window.location.href = LOGIN_URL
     return false

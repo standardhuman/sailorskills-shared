@@ -39,13 +39,25 @@ export async function initSupabaseAuth(options = {}) {
   // Make supabase globally available
   window.supabaseClient = supabase;
 
+  // Check for auth tokens in URL hash (from SSO redirect)
+  if (window.location.hash.includes('access_token')) {
+    console.log('🔑 Auth tokens detected in URL hash, processing...');
+    // Wait for Supabase to automatically process the hash tokens
+    await new Promise(resolve => setTimeout(resolve, 500));
+    // Clear the hash from URL to prevent reprocessing on refresh
+    const cleanUrl = window.location.origin + window.location.pathname + window.location.search;
+    history.replaceState(null, '', cleanUrl);
+  }
+
   // Check for existing session
   const { data: { session } } = await supabase.auth.getSession();
 
   if (!session) {
     // Not authenticated - redirect to SSO login
     console.log('❌ No session found - redirecting to SSO login');
-    const redirectUrl = encodeURIComponent(window.location.href);
+    // Use origin + pathname + search (exclude hash to prevent redirect loops)
+    const currentUrl = window.location.origin + window.location.pathname + window.location.search;
+    const redirectUrl = encodeURIComponent(currentUrl);
     window.location.href = `https://login.sailorskills.com/login.html?redirect=${redirectUrl}`;
     return false;
   } else {
