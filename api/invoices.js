@@ -38,7 +38,8 @@ export default async function handler(req, res) {
         boatDetails,
         serviceDetails,
         notes,
-        dueInDays = 30
+        dueInDays = 30,
+        emailSentByBilling = false  // Flag to prevent trigger from sending duplicate email
     } = req.body;
 
     // Validate required fields
@@ -91,7 +92,7 @@ export default async function handler(req, res) {
                 boat_details: boatDetails || {},
                 service_details: serviceDetails || {},
                 notes: notes || null,
-                email_sent: false
+                email_sent: emailSentByBilling  // Set true if billing already sent email
             })
             .select()
             .single();
